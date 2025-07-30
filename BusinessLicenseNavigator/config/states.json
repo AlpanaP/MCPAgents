@@ -384,6 +384,218 @@
           "business_steps": "ol, ul, li"
         }
       }
+    },
+    "FL": {
+      "name": "Florida",
+      "full_name": "State of Florida",
+      "nickname": "The Sunshine State",
+      "type": "state",
+      "country": "US",
+      "capabilities": {
+        "rag_enabled": true,
+        "mcp_enabled": true,
+        "web_scraping": true,
+        "official_apis": false
+      },
+      "resources": {
+        "main": {
+          "name": "MyFloridaLicense.com",
+          "url": "https://www2.myfloridalicense.com/",
+          "description": "Official Florida Department of Business and Professional Regulation for business licenses"
+        },
+        "corporations": {
+          "name": "Florida Division of Corporations",
+          "url": "https://dos.myflorida.com/sunbiz/",
+          "description": "Florida business entity registration and corporate filings"
+        },
+        "state": {
+          "name": "Florida Department of State",
+          "url": "https://dos.myflorida.com/",
+          "description": "Florida Secretary of State"
+        },
+        "revenue": {
+          "name": "Florida Department of Revenue",
+          "url": "https://floridarevenue.com/",
+          "description": "Florida tax and revenue information"
+        },
+        "labor": {
+          "name": "Florida Department of Economic Opportunity",
+          "url": "https://floridajobs.org/",
+          "description": "Florida employment and workplace information"
+        },
+        "construction": {
+          "name": "Florida Construction Industry Licensing Board",
+          "url": "https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/",
+          "description": "Florida construction licensing and regulation"
+        }
+      },
+      "local_governments": {
+        "counties": [
+          {
+            "name": "Pinellas County",
+            "url": "https://www.pinellascounty.org/"
+          },
+          {
+            "name": "Hillsborough County",
+            "url": "https://www.hillsboroughcounty.org/"
+          },
+          {
+            "name": "Miami-Dade County",
+            "url": "https://www.miamidade.gov/"
+          },
+          {
+            "name": "Broward County",
+            "url": "https://www.broward.org/"
+          },
+          {
+            "name": "Orange County",
+            "url": "https://www.ocfl.net/"
+          }
+        ],
+        "cities": [
+          {
+            "name": "City of Palm Harbor",
+            "url": "https://www.palmharbor.org/"
+          },
+          {
+            "name": "City of Tampa",
+            "url": "https://www.tampa.gov/"
+          },
+          {
+            "name": "City of Miami",
+            "url": "https://www.miamigov.com/"
+          },
+          {
+            "name": "City of Orlando",
+            "url": "https://www.orlando.gov/"
+          },
+          {
+            "name": "City of Jacksonville",
+            "url": "https://www.coj.net/"
+          }
+        ]
+      },
+      "business_support": [
+        {
+          "name": "Florida Economic Development",
+          "url": "https://www.enterpriseflorida.com/"
+        },
+        {
+          "name": "Florida Chamber of Commerce",
+          "url": "https://www.flchamber.com/"
+        },
+        {
+          "name": "Florida SBA",
+          "url": "https://www.sba.gov/offices/district/fl/miami"
+        },
+        {
+          "name": "Florida SCORE",
+          "url": "https://florida.score.org/"
+        },
+        {
+          "name": "Florida Small Business Development Center",
+          "url": "https://floridasbdc.com/"
+        }
+      ],
+      "mcp_servers": {
+        "rag_server": {
+          "module": "florida_rag.florida_rag_server",
+          "class": "FloridaRAGServer",
+          "config": {
+            "collection_name": "florida_licenses",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "vector_size": 384
+          }
+        },
+        "mcp_server": {
+          "module": "florida_rag.florida_mcp_server",
+          "class": "FloridaLicenseServer"
+        }
+      },
+      "scraping_config": {
+        "base_url": "https://www2.myfloridalicense.com/",
+        "allowed_domains": [
+          "www2.myfloridalicense.com",
+          "dos.myflorida.com",
+          "floridarevenue.com",
+          "floridajobs.org",
+          "myfloridalicense.com"
+        ],
+        "selectors": {
+          "license_categories": "h2, h3, h4, h5",
+          "license_details": "p, li, div",
+          "business_steps": "ol, ul, li"
+        }
+      },
+      "business_types": {
+        "construction": {
+          "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement", "palm harbor"],
+          "resources": [
+            {
+              "name": "Florida Construction Industry Licensing Board",
+              "url": "https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/"
+            },
+            {
+              "name": "Florida Contractor License Application",
+              "url": "https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/apply-for-license/"
+            },
+            {
+              "name": "Florida Construction License Requirements",
+              "url": "https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/license-requirements/"
+            },
+            {
+              "name": "Florida Construction License Search",
+              "url": "https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/verify-license/"
+            },
+            {
+              "name": "Pinellas County Building Department",
+              "url": "https://www.pinellascounty.org/building/"
+            },
+            {
+              "name": "Palm Harbor Building Permits",
+              "url": "https://www.palmharbor.org/departments/development-services/"
+            }
+          ],
+          "contact": {
+            "phone": "(850) 487-1395",
+            "name": "DBPR Customer Contact Center"
+          }
+        },
+        "real_estate": {
+          "keywords": ["real estate", "realtor", "property", "broker", "agent"],
+          "resources": [
+            {
+              "name": "Florida Real Estate Commission",
+              "url": "https://www.myfloridalicense.com/DBPR/real-estate-commission/"
+            },
+            {
+              "name": "Florida Real Estate License Application",
+              "url": "https://www.myfloridalicense.com/DBPR/real-estate-commission/apply-for-license/"
+            }
+          ],
+          "contact": {
+            "phone": "(850) 487-1395",
+            "name": "DBPR Customer Contact Center"
+          }
+        },
+        "food": {
+          "keywords": ["restaurant", "food", "bakery", "cafe", "catering", "kitchen", "dining"],
+          "resources": [
+            {
+              "name": "Florida Division of Hotels and Restaurants",
+              "url": "https://www.myfloridalicense.com/DBPR/hotels-restaurants/"
+            },
+            {
+              "name": "Florida Food Service License Application",
+              "url": "https://www.myfloridalicense.com/DBPR/hotels-restaurants/apply-for-license/"
+            }
+          ],
+          "contact": {
+            "phone": "(850) 487-1395",
+            "name": "DBPR Customer Contact Center"
+          }
+        }
+      }
     }
   },
   "default_capabilities": {
