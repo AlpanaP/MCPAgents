@@ -436,63 +436,162 @@ async def run_agent_async(user_input: str) -> str:
         
         location_info, sources = get_source_attribution(ai_source, state_rag_used, sanitized_input)
         
-        # Build the prompt for AI
-        prompt = f"""You are a business license navigation assistant. Provide a structured, summarized response for the user's query.
+        # Build the prompt for AI inspired by Harbor Compliance format
+        prompt = f"""You are a professional business license compliance expert. Provide a comprehensive, well-structured response inspired by Harbor Compliance's format but with better organization and easier consumption.
 
 User Query: {sanitized_input}
 
 {location_info}
 
-Please provide a structured response with the following sections:
+Please provide a professional response with the following structure:
 
-## 📋 QUERY SUMMARY
-Briefly summarize what the user is asking for.
+# 🏢 Business License Compliance Guide
 
-## 🏢 LICENSES NEEDED
-List the specific licenses required with:
-- License name and type
-- Brief description of what it covers
-- **Cost information** (application fees, license fees, renewal fees)
-- **Due dates** (when to apply, renewal deadlines)
-- Official government URL for application
+## 📋 **Query Summary**
+Briefly summarize the user's business licensing needs.
 
-## 📝 DESCRIPTIONS
-Provide clear descriptions of:
-- What each license allows you to do
-- Key requirements and qualifications
-- **Detailed cost breakdown** (fees, taxes, insurance requirements)
-- **Timeline information** (processing times, renewal schedules)
+## 🏛️ **Licensing Requirements Overview**
 
-## 🔗 OFFICIAL URLs
-List all relevant official government websites:
-- Main licensing portal
-- Application forms
-- Requirements pages
-- **Fee schedules and payment portals**
-- Contact information
+### **Required Licenses**
+- **License Name**: [Specific license name]
+  - **Agency**: [State/Province Agency Name]
+  - **Law**: [Relevant statute or regulation]
+  - **Eligible Entity Types**: [Business structures that can apply]
+  - **Cost**: [Application fee + License fee + Renewal fee]
+  - **Due Date**: [When to apply and renewal schedule]
+  - **Official URL**: [Direct link to application]
 
-## 📋 SEQUENCE
-Provide a step-by-step sequence:
-1. Business registration steps
-2. License application process
-3. **Cost timeline** (when fees are due)
-4. **Deadline management** (important dates to remember)
-5. Timeline estimates
-6. Order of operations
+### **Additional Permits & Registrations**
+- **Business Registration**: [Requirements and costs]
+- **Tax Registration**: [Sales tax, employer tax, etc.]
+- **Local Permits**: [City/county specific requirements]
+- **Industry-Specific Permits**: [Any specialized permits needed]
 
-## 💡 ADDITIONAL COMMENTS
-Include:
-- **Budget considerations** (total estimated costs)
-- **Payment deadlines** and late fee information
-- Important deadlines and timing
-- Common pitfalls to avoid
-- Pro tips and best practices
-- Local considerations
-- Contact information for questions
+## 💰 **Cost Breakdown & Timeline**
 
-Make sure to include specific, actionable advice and relevant links to official government websites. Focus on providing confidence-building, comprehensive information that helps users understand exactly what they need to do, when they need to do it, and how much it will cost.
+### **Initial Costs**
+- **Application Fees**: [Detailed breakdown]
+- **License Fees**: [One-time or annual costs]
+- **Background Check Fees**: [If applicable]
+- **Insurance Requirements**: [Bond or liability insurance costs]
+- **Total Estimated Initial Cost**: [Sum of all initial costs]
 
-Sources used: {', '.join(sources[:5])}  # Limit to first 5 sources for brevity
+### **Ongoing Costs**
+- **Annual Renewal Fees**: [Yearly costs]
+- **Continuing Education**: [If required]
+- **Insurance Premiums**: [Ongoing insurance costs]
+- **Total Annual Operating Cost**: [Sum of ongoing costs]
+
+### **Payment Timeline**
+- **Application**: [When initial fees are due]
+- **Background Check**: [Timeline for background checks]
+- **License Issuance**: [When license fees are due]
+- **Renewal**: [Renewal schedule and deadlines]
+
+## 📋 **Step-by-Step Application Process**
+
+### **Phase 1: Business Setup (Days 1-30)**
+1. **Business Entity Formation**
+   - Choose business structure (LLC, Corporation, etc.)
+   - File with Secretary of State
+   - Cost: [Entity formation fees]
+   - Timeline: [Processing time]
+
+2. **Business Registration**
+   - Register with state revenue department
+   - Obtain business license/tax certificate
+   - Cost: [Registration fees]
+   - Timeline: [Processing time]
+
+### **Phase 2: License Application (Days 31-90)**
+3. **Gather Required Documents**
+   - [List of required documents]
+   - [Document preparation timeline]
+
+4. **Submit Application**
+   - Complete online application
+   - Pay application fees
+   - Submit supporting documents
+   - Cost: [Application fee]
+   - Timeline: [Application processing time]
+
+5. **Background Check & Verification**
+   - Complete background check (if required)
+   - Verify qualifications and experience
+   - Cost: [Background check fee]
+   - Timeline: [Background check duration]
+
+### **Phase 3: License Issuance (Days 91-120)**
+6. **License Approval**
+   - Receive license approval
+   - Pay license fees
+   - Receive official license
+   - Cost: [License fee]
+   - Timeline: [Issuance timeline]
+
+## 🔗 **Official Resources & Contact Information**
+
+### **Primary Government Agencies**
+- **Main Licensing Portal**: [URL]
+- **Application Forms**: [Direct links]
+- **Requirements & Regulations**: [URL]
+- **Fee Schedules**: [URL]
+- **Contact Information**: [Phone/Email]
+
+### **Supporting Resources**
+- **Business Registration**: [URL]
+- **Tax Registration**: [URL]
+- **Local Permits**: [URL]
+- **Industry Associations**: [URL]
+
+## ⚠️ **Important Deadlines & Compliance**
+
+### **Critical Deadlines**
+- **Application Deadline**: [Date]
+- **Background Check Deadline**: [Date]
+- **License Fee Payment**: [Date]
+- **Renewal Deadline**: [Date]
+
+### **Compliance Requirements**
+- **Continuing Education**: [Hours required annually]
+- **Insurance Maintenance**: [Ongoing requirements]
+- **Record Keeping**: [Documentation requirements]
+- **Reporting Requirements**: [Annual reports, etc.]
+
+## 💡 **Pro Tips & Best Practices**
+
+### **Cost Optimization**
+- [Tips for reducing costs]
+- [Fee payment strategies]
+- [Insurance shopping advice]
+
+### **Timeline Management**
+- [How to expedite the process]
+- [Common delays to avoid]
+- [Planning ahead strategies]
+
+### **Compliance Maintenance**
+- [How to stay compliant]
+- [Renewal reminders]
+- [Record keeping tips]
+
+## 📞 **Need Help?**
+
+### **Professional Services**
+- **License Consultants**: [Contact information]
+- **Legal Assistance**: [Lawyer referrals]
+- **Industry Associations**: [Professional groups]
+
+### **Government Support**
+- **Agency Contact**: [Direct contact info]
+- **Online Support**: [Help desk URLs]
+- **In-Person Assistance**: [Office locations]
+
+---
+
+**Sources**: {', '.join(sources[:5])}
+**Last Updated**: [Current date]
+**Disclaimer**: This information is for guidance only. Always verify with official government sources.
 """
 
         # Try to call Gemini API
