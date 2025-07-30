@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Delaware Business License MCP Server with RAG
-Provides tools to access Delaware business license information with vector-based retrieval
+Provides tools to access Delaware business license information with vector-based retrieval using Qdrant
 """
 
 import asyncio
@@ -14,8 +14,8 @@ import requests
 from bs4 import BeautifulSoup
 import numpy as np
 from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.config import Settings
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
 
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
@@ -39,6 +39,12 @@ logger = logging.getLogger(__name__)
 DELAWARE_BASE_URL = "https://firststeps.delaware.gov"
 DELAWARE_TOPICS_URL = "https://firststeps.delaware.gov/topics/"
 
+# Qdrant configuration
+QDRANT_HOST = "localhost"
+QDRANT_PORT = 6333
+COLLECTION_NAME = "delaware_licenses"
+VECTOR_SIZE = 384  # all-MiniLM-L6-v2 embedding size
+
 class DelawareRAGServer:
     def __init__(self):
         self.server = Server("delaware-licenses-rag")
@@ -49,7 +55,7 @@ class DelawareRAGServer:
         
         # Initialize RAG components
         self.embedding_model = None
-        self.vector_db = None
+        self.qdrant_client = None
         self.license_data = []
         
         # Initialize RAG system
@@ -60,37 +66,57 @@ class DelawareRAGServer:
         self.server.call_tool = self.call_tool
 
     def _initialize_rag(self):
-        """Initialize the RAG system with embedding model and vector database."""
+        """Initialize the RAG system with embedding model and Qdrant vector database."""
         try:
             # Initialize embedding model
             logger.info("Loading embedding model...")
             self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
             
-            # Initialize ChromaDB
-            logger.info("Initializing vector database...")
-            self.vector_db = chromadb.Client(Settings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory="./delaware_license_db"
-            ))
+            # Initialize Qdrant client
+            logger.info("Initializing Qdrant vector database...")
+            try:
+                self.qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+                logger.info("Connected to Qdrant server")
+            except Exception as e:
+                logger.warning(f"Could not connect to Qdrant server: {e}")
+                logger.info("Creating in-memory Qdrant client")
+                self.qdrant_client = QdrantClient(":memory:")
             
             # Create or get collection
-            try:
-                self.collection = self.vector_db.get_collection("delaware_licenses")
-                logger.info("Loaded existing license collection")
-            except:
-                self.collection = self.vector_db.create_collection("delaware_licenses")
-                logger.info("Created new license collection")
-                # Populate with initial data
-                self._populate_license_data()
+            self._setup_qdrant_collection()
             
         except Exception as e:
             logger.error(f"Error initializing RAG: {e}")
             # Fallback to non-RAG mode
             self.embedding_model = None
-            self.vector_db = None
+            self.qdrant_client = None
+
+    def _setup_qdrant_collection(self):
+        """Setup Qdrant collection for Delaware license data."""
+        try:
+            # Check if collection exists
+            collections = self.qdrant_client.get_collections()
+            collection_exists = any(col.name == COLLECTION_NAME for col in collections.collections)
+            
+            if not collection_exists:
+                logger.info("Creating new Qdrant collection for Delaware licenses")
+                self.qdrant_client.create_collection(
+                    collection_name=COLLECTION_NAME,
+                    vectors_config=VectorParams(
+                        size=VECTOR_SIZE,
+                        distance=Distance.COSINE
+                    )
+                )
+                # Populate with initial data
+                self._populate_license_data()
+            else:
+                logger.info("Using existing Delaware licenses collection")
+                
+        except Exception as e:
+            logger.error(f"Error setting up Qdrant collection: {e}")
 
     def _populate_license_data(self):
-        """Populate the vector database with Delaware license information."""
+        """Populate the Qdrant collection with Delaware license information."""
         try:
             logger.info("Fetching Delaware license data...")
             response = self.session.get(DELAWARE_TOPICS_URL)
@@ -124,24 +150,36 @@ class DelawareRAGServer:
                             }
                             license_entries.append(entry)
             
-            # Add to vector database
-            if license_entries and self.collection:
+            # Add to Qdrant collection
+            if license_entries and self.qdrant_client:
                 texts = [entry["text"] for entry in license_entries]
                 metadatas = [{"category": entry["category"], "license_type": entry["license_type"], "source": entry["source"]} for entry in license_entries]
-                ids = [f"license_{i}" for i in range(len(license_entries))]
                 
                 # Generate embeddings
                 embeddings = self.embedding_model.encode(texts)
                 
-                # Add to collection
-                self.collection.add(
-                    embeddings=embeddings.tolist(),
-                    documents=texts,
-                    metadatas=metadatas,
-                    ids=ids
+                # Create points for Qdrant
+                points = []
+                for i, (embedding, metadata) in enumerate(zip(embeddings, metadatas)):
+                    point = PointStruct(
+                        id=i,
+                        vector=embedding.tolist(),
+                        payload={
+                            "text": texts[i],
+                            "category": metadata["category"],
+                            "license_type": metadata["license_type"],
+                            "source": metadata["source"]
+                        }
+                    )
+                    points.append(point)
+                
+                # Add points to collection
+                self.qdrant_client.upsert(
+                    collection_name=COLLECTION_NAME,
+                    points=points
                 )
                 
-                logger.info(f"Added {len(license_entries)} license entries to vector database")
+                logger.info(f"Added {len(license_entries)} license entries to Qdrant collection")
                 self.license_data = license_entries
                 
         except Exception as e:
@@ -179,7 +217,7 @@ class DelawareRAGServer:
             ),
             Tool(
                 name="search_delaware_licenses_rag",
-                description="Search for licenses using semantic search (RAG-powered)",
+                description="Search for licenses using semantic search (RAG-powered with Qdrant)",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -206,7 +244,7 @@ class DelawareRAGServer:
             ),
             Tool(
                 name="get_similar_licenses",
-                description="Find similar licenses based on a license type (RAG-powered)",
+                description="Find similar licenses based on a license type (RAG-powered with Qdrant)",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -352,7 +390,7 @@ class DelawareRAGServer:
             )
 
     async def _search_licenses_rag(self, arguments: Dict[str, Any]) -> CallToolResult:
-        """Search for licenses using semantic search (RAG-powered)."""
+        """Search for licenses using semantic search (RAG-powered with Qdrant)."""
         query = arguments.get("query", "").strip()
         top_k = arguments.get("top_k", 5)
         
@@ -365,29 +403,32 @@ class DelawareRAGServer:
             )
         
         try:
-            if self.collection and self.embedding_model:
-                # Use RAG for semantic search
-                logger.info(f"Performing RAG search for: {query}")
+            if self.qdrant_client and self.embedding_model:
+                # Use RAG for semantic search with Qdrant
+                logger.info(f"Performing RAG search with Qdrant for: {query}")
                 
                 # Generate query embedding
                 query_embedding = self.embedding_model.encode([query])
                 
-                # Search in vector database
-                results = self.collection.query(
-                    query_embeddings=query_embedding.tolist(),
-                    n_results=top_k
+                # Search in Qdrant collection
+                search_results = self.qdrant_client.search(
+                    collection_name=COLLECTION_NAME,
+                    query_vector=query_embedding[0].tolist(),
+                    limit=top_k
                 )
                 
-                result_text = f"Delaware License Search Results (RAG-powered) for: '{query}'\n\n"
+                result_text = f"Delaware License Search Results (RAG-powered with Qdrant) for: '{query}'\n\n"
                 result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
                 
-                if results['documents'] and results['documents'][0]:
-                    result_text += f"Found {len(results['documents'][0])} relevant license types:\n\n"
+                if search_results:
+                    result_text += f"Found {len(search_results)} relevant license types:\n\n"
                     
-                    for i, (doc, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0]), 1):
-                        result_text += f"{i}. **{metadata['license_type']}**\n"
-                        result_text += f"   Category: {metadata['category']}\n"
-                        result_text += f"   Relevance: {doc}\n\n"
+                    for i, result in enumerate(search_results, 1):
+                        payload = result.payload
+                        result_text += f"{i}. **{payload['license_type']}**\n"
+                        result_text += f"   Category: {payload['category']}\n"
+                        result_text += f"   Relevance Score: {result.score:.3f}\n"
+                        result_text += f"   Description: {payload['text']}\n\n"
                 else:
                     result_text += f"No license types found matching '{query}'.\n"
                     result_text += "\nTry searching for broader terms like:\n"
@@ -462,7 +503,7 @@ class DelawareRAGServer:
             )
 
     async def _get_similar_licenses(self, arguments: Dict[str, Any]) -> CallToolResult:
-        """Find similar licenses based on a license type (RAG-powered)."""
+        """Find similar licenses based on a license type (RAG-powered with Qdrant)."""
         license_type = arguments.get("license_type", "").strip()
         top_k = arguments.get("top_k", 3)
         
@@ -475,33 +516,36 @@ class DelawareRAGServer:
             )
         
         try:
-            if self.collection and self.embedding_model:
-                # Use RAG for similarity search
-                logger.info(f"Finding similar licenses for: {license_type}")
+            if self.qdrant_client and self.embedding_model:
+                # Use RAG for similarity search with Qdrant
+                logger.info(f"Finding similar licenses with Qdrant for: {license_type}")
                 
                 # Generate embedding for the license type
                 license_embedding = self.embedding_model.encode([license_type])
                 
-                # Search for similar licenses
-                results = self.collection.query(
-                    query_embeddings=license_embedding.tolist(),
-                    n_results=top_k + 1  # +1 to exclude the exact match
+                # Search for similar licenses in Qdrant
+                search_results = self.qdrant_client.search(
+                    collection_name=COLLECTION_NAME,
+                    query_vector=license_embedding[0].tolist(),
+                    limit=top_k + 1  # +1 to exclude the exact match
                 )
                 
-                result_text = f"Similar Licenses to '{license_type}' (RAG-powered):\n\n"
+                result_text = f"Similar Licenses to '{license_type}' (RAG-powered with Qdrant):\n\n"
                 result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
                 
-                if results['documents'] and results['documents'][0]:
-                    similar_licenses = results['documents'][0][1:]  # Skip the first (exact match)
-                    similar_metadatas = results['metadatas'][0][1:]
+                if search_results:
+                    # Filter out exact matches
+                    similar_results = [r for r in search_results if r.payload['license_type'] != license_type]
                     
-                    if similar_licenses:
-                        result_text += f"Found {len(similar_licenses)} similar license types:\n\n"
+                    if similar_results:
+                        result_text += f"Found {len(similar_results)} similar license types:\n\n"
                         
-                        for i, (doc, metadata) in enumerate(zip(similar_licenses, similar_metadatas), 1):
-                            result_text += f"{i}. **{metadata['license_type']}**\n"
-                            result_text += f"   Category: {metadata['category']}\n"
-                            result_text += f"   Similarity: {doc}\n\n"
+                        for i, result in enumerate(similar_results, 1):
+                            payload = result.payload
+                            result_text += f"{i}. **{payload['license_type']}**\n"
+                            result_text += f"   Category: {payload['category']}\n"
+                            result_text += f"   Similarity Score: {result.score:.3f}\n"
+                            result_text += f"   Description: {payload['text']}\n\n"
                     else:
                         result_text += "No similar licenses found.\n"
                 else:
@@ -516,7 +560,7 @@ class DelawareRAGServer:
                 return CallToolResult(
                     content=[TextContent(
                         type="text",
-                        text="RAG system not available. Please ensure the embedding model and vector database are properly initialized."
+                        text="RAG system not available. Please ensure the embedding model and Qdrant database are properly initialized."
                     )]
                 )
                 

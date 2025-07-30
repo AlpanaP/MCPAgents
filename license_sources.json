@@ -40,9 +40,15 @@
       "rag_capabilities": {
         "enabled": true,
         "embedding_model": "all-MiniLM-L6-v2",
-        "vector_database": "ChromaDB",
+        "vector_database": "Qdrant",
         "semantic_search": true,
-        "similarity_search": true
+        "similarity_search": true,
+        "qdrant_config": {
+          "host": "localhost",
+          "port": 6333,
+          "collection_name": "delaware_licenses",
+          "vector_size": 384
+        }
       }
     }
   },
