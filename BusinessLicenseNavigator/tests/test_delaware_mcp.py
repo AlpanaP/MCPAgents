@@ -59,10 +59,14 @@ async def test_delaware_tools():
     print("\n" + "=" * 50)
     print("✅ Delaware MCP Tools Test Complete!")
 
-def main():
-    """Main function to run the test."""
+def test_delaware_mcp():
+    """Wrapper function for test runner."""
     print("Starting Delaware MCP Tools Test...")
     asyncio.run(test_delaware_tools())
+
+def main():
+    """Main function to run the test."""
+    test_delaware_mcp()
 
 if __name__ == "__main__":
     main() 

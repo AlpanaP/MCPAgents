@@ -104,7 +104,7 @@ with st.expander("🏛️ Delaware RAG Status"):
         **To enable Delaware RAG:**
         1. Install dependencies: `pip install -r requirements.txt`
         2. Setup Qdrant: `python setup_qdrant.py`
-        3. Test RAG tools: `python test_delaware_rag.py`
+        3. Test RAG tools: `python tests/test_delaware_rag.py`
         
         **Benefits of Delaware RAG:**
         - Official Delaware government data
@@ -261,7 +261,7 @@ pip install -r requirements.txt
 python setup_qdrant.py
 
 # Test Delaware RAG tools
-python test_delaware_rag.py
+python tests/test_delaware_rag.py
 
 # Run the app
 streamlit run streamlit_app.py

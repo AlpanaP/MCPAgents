@@ -136,7 +136,7 @@ def main():
     print("\n" + "=" * 50)
     print("✅ Qdrant setup completed successfully!")
     print("\n🎯 Next steps:")
-    print("1. Run the Delaware RAG tools: python test_delaware_rag.py")
+    print("1. Run the Delaware RAG tools: python tests/test_delaware_rag.py")
     print("2. Access Qdrant dashboard: http://localhost:6333/dashboard")
     print("3. Use the MCP tools with RAG capabilities")
     

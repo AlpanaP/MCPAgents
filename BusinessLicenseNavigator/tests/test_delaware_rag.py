@@ -96,10 +96,14 @@ async def test_delaware_rag_tools():
         print("⚠️  RAG System Status: Fallback Mode")
         print("   - Using web scraping fallback")
 
-def main():
-    """Main function to run the test."""
+def test_delaware_rag():
+    """Wrapper function for test runner."""
     print("Starting Delaware RAG MCP Tools with Qdrant Test...")
     asyncio.run(test_delaware_rag_tools())
+
+def main():
+    """Main function to run the test."""
+    test_delaware_rag()
 
 if __name__ == "__main__":
     main() 

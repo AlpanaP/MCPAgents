@@ -164,6 +164,10 @@ def test_configuration():
         print(f"❌ Configuration test failed: {e}")
         return False
 
+def run_integration_tests():
+    """Wrapper function for test runner."""
+    return main()
+
 def main():
     """Run all integration tests."""
     print("🚀 Business License Navigator Integration Tests")
