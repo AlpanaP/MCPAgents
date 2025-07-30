@@ -33,14 +33,30 @@
         "get_delaware_license_categories",
         "get_delaware_license_details",
         "search_delaware_licenses",
-        "get_delaware_business_steps"
-      ]
+        "search_delaware_licenses_rag",
+        "get_delaware_business_steps",
+        "get_similar_licenses"
+      ],
+      "rag_capabilities": {
+        "enabled": true,
+        "embedding_model": "all-MiniLM-L6-v2",
+        "vector_database": "ChromaDB",
+        "semantic_search": true,
+        "similarity_search": true
+      }
     }
   },
   "mcp_servers": {
     "delaware_licenses": {
       "command": "python",
       "args": ["delaware_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "delaware_licenses_rag": {
+      "command": "python",
+      "args": ["delaware_rag_server.py"],
       "env": {
         "PYTHONPATH": "."
       }
