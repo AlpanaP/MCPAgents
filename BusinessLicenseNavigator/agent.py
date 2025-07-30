@@ -411,6 +411,18 @@ async def run_agent_async(user_input: str) -> str:
         is_state_query = False
         if state_handler:
             state_code = state_handler.detect_state_from_query(sanitized_input)
+            if not state_code:
+                # Try to create dynamic state config for common states
+                # Extract potential state codes from the query
+                import re
+                state_matches = re.findall(r'\b([A-Z]{2})\b', sanitized_input.upper())
+                if state_matches:
+                    for potential_state in state_matches:
+                        state_config = state_handler.get_or_create_state_config(potential_state)
+                        if state_config:
+                            state_code = potential_state
+                            break
+            
             is_state_query = state_code is not None
         
         # Get state-specific information if available
@@ -425,20 +437,52 @@ async def run_agent_async(user_input: str) -> str:
         location_info, sources = get_source_attribution(ai_source, state_rag_used, sanitized_input)
         
         # Build the prompt for AI
-        prompt = f"""You are a business license navigation assistant. Help the user understand the requirements for starting their business.
+        prompt = f"""You are a business license navigation assistant. Provide a structured, summarized response for the user's query.
 
 User Query: {sanitized_input}
 
 {location_info}
 
-Please provide comprehensive guidance including:
-1. Step-by-step process for business registration
-2. Required licenses and permits
-3. Important compliance requirements
-4. Useful resources and contact information
-5. Next steps and timeline
+Please provide a structured response with the following sections:
 
-Make sure to include specific, actionable advice and relevant links to official government websites.
+## 📋 QUERY SUMMARY
+Briefly summarize what the user is asking for.
+
+## 🏢 LICENSES NEEDED
+List the specific licenses required with:
+- License name and type
+- Brief description of what it covers
+- Official government URL for application
+
+## 📝 DESCRIPTIONS
+Provide clear descriptions of:
+- What each license allows you to do
+- Key requirements and qualifications
+- Typical costs and fees
+
+## 🔗 OFFICIAL URLs
+List all relevant official government websites:
+- Main licensing portal
+- Application forms
+- Requirements pages
+- Contact information
+
+## 📋 SEQUENCE
+Provide a step-by-step sequence:
+1. Business registration steps
+2. License application process
+3. Timeline estimates
+4. Order of operations
+
+## 💡 ADDITIONAL COMMENTS
+Include:
+- Important deadlines and timing
+- Common pitfalls to avoid
+- Pro tips and best practices
+- Local considerations
+- Contact information for questions
+
+Make sure to include specific, actionable advice and relevant links to official government websites. Focus on providing confidence-building, comprehensive information that helps users understand exactly what they need to do.
 
 Sources used: {', '.join(sources[:5])}  # Limit to first 5 sources for brevity
 """

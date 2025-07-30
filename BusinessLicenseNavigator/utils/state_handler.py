@@ -294,3 +294,101 @@ class StateHandler:
     def get_supported_countries(self) -> Dict[str, Any]:
         """Get supported countries and their states/provinces."""
         return self.states_config.get("supported_countries", {}) 
+    
+    def create_dynamic_state_config(self, state_code: str, state_name: str, domain: str, country: str = "US") -> Dict[str, Any]:
+        """Dynamically create a state configuration using the generic template."""
+        generic_template = self.states_config.get("generic_template", {})
+        
+        if not generic_template:
+            return None
+        
+        # Create dynamic state config
+        state_config = generic_template.copy()
+        state_config["name"] = state_name
+        state_config["full_name"] = f"State of {state_name}" if country == "US" else f"Province of {state_name}"
+        state_config["type"] = "state" if country == "US" else "province"
+        state_config["country"] = country
+        
+        # Replace URL patterns with actual domain
+        url_patterns = state_config.get("url_patterns", {})
+        for key, pattern in url_patterns.items():
+            url_patterns[key] = pattern.replace("{domain}", domain)
+        
+        # Replace resource URLs
+        generic_resources = state_config.get("generic_resources", {})
+        for category, resource in generic_resources.items():
+            if isinstance(resource, dict):
+                resource["url"] = resource["url"].replace("{domain}", domain)
+                resource["name"] = resource["name"].replace("State", state_name)
+        
+        # Replace local government patterns
+        local_patterns = state_config.get("local_government_patterns", {})
+        for gov_type, gov_list in local_patterns.items():
+            for gov in gov_list:
+                gov["url"] = gov["url"].replace("{county}", f"{state_name.lower()}county")
+                gov["url"] = gov["url"].replace("{city}", f"{state_name.lower()}")
+                gov["name"] = gov["name"].replace("{County}", f"{state_name} County")
+                gov["name"] = gov["name"].replace("{City}", f"City of {state_name}")
+        
+        # Replace business support patterns
+        business_support = state_config.get("business_support_patterns", [])
+        for support in business_support:
+            support["url"] = support["url"].replace("{state}", state_name.lower())
+            support["url"] = support["url"].replace("{state_abbr}", state_code.lower())
+            support["name"] = support["name"].replace("{State}", state_name)
+        
+        return state_config
+    
+    def add_dynamic_state(self, state_code: str, state_name: str, domain: str, country: str = "US") -> bool:
+        """Add a new state dynamically using the generic template."""
+        try:
+            state_config = self.create_dynamic_state_config(state_code, state_name, domain, country)
+            if state_config:
+                self.states_config["states"][state_code.upper()] = state_config
+                return True
+            return False
+        except Exception as e:
+            print(f"Error adding dynamic state {state_code}: {e}")
+            return False
+    
+    def get_or_create_state_config(self, state_code: str) -> Optional[Dict[str, Any]]:
+        """Get existing state config or create a dynamic one if not found."""
+        # First try to get existing config
+        state_config = self.get_state_config(state_code)
+        if state_config:
+            return state_config
+        
+        # If not found, try to create dynamic config based on common patterns
+        state_code_upper = state_code.upper()
+        state_name_mapping = {
+            "NY": "New York",
+            "CA": "California", 
+            "TX": "Texas",
+            "FL": "Florida",
+            "IL": "Illinois",
+            "PA": "Pennsylvania",
+            "OH": "Ohio",
+            "GA": "Georgia",
+            "NC": "North Carolina",
+            "MI": "Michigan",
+            "NJ": "New Jersey",
+            "VA": "Virginia",
+            "WA": "Washington",
+            "AZ": "Arizona",
+            "MA": "Massachusetts",
+            "TN": "Tennessee",
+            "IN": "Indiana",
+            "MO": "Missouri",
+            "MD": "Maryland",
+            "CO": "Colorado"
+        }
+        
+        if state_code_upper in state_name_mapping:
+            state_name = state_name_mapping[state_code_upper]
+            domain = f"{state_name.lower().replace(' ', '')}.gov"
+            
+            # Create dynamic config
+            if self.add_dynamic_state(state_code_upper, state_name, domain):
+                return self.get_state_config(state_code_upper)
+        
+        return None 

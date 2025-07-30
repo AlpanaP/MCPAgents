@@ -598,6 +598,150 @@
       }
     }
   },
+  "generic_template": {
+    "name": "Generic State/Province",
+    "full_name": "Generic State/Province",
+    "nickname": "Generic",
+    "type": "state",
+    "country": "US",
+    "capabilities": {
+      "rag_enabled": true,
+      "mcp_enabled": true,
+      "web_scraping": true,
+      "official_apis": false
+    },
+    "url_patterns": {
+      "main_license_site": "https://{domain}/",
+      "business_registration": "https://{domain}/business/",
+      "license_search": "https://{domain}/search/",
+      "application_portal": "https://{domain}/apply/",
+      "requirements": "https://{domain}/requirements/",
+      "fees": "https://{domain}/fees/",
+      "contact": "https://{domain}/contact/"
+    },
+    "industry_patterns": {
+      "construction": {
+        "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement"],
+        "license_types": ["General Contractor", "Building Contractor", "Residential Contractor", "Specialty Contractor"],
+        "requirements": ["Background check", "Experience verification", "Financial responsibility", "Examination"],
+        "fees": ["Application fee", "License fee", "Background check fee", "Examination fee"]
+      },
+      "food_service": {
+        "keywords": ["restaurant", "food", "bakery", "cafe", "catering", "kitchen", "dining"],
+        "license_types": ["Food Service License", "Restaurant License", "Catering License", "Food Handler License"],
+        "requirements": ["Food safety training", "Health inspection", "Kitchen compliance", "Employee training"],
+        "fees": ["Application fee", "License fee", "Inspection fee", "Renewal fee"]
+      },
+      "real_estate": {
+        "keywords": ["real estate", "realtor", "property", "broker", "agent"],
+        "license_types": ["Real Estate Broker", "Real Estate Agent", "Property Manager", "Appraiser"],
+        "requirements": ["Pre-licensing education", "Examination", "Background check", "Continuing education"],
+        "fees": ["Application fee", "License fee", "Education fee", "Renewal fee"]
+      },
+      "healthcare": {
+        "keywords": ["healthcare", "medical", "nursing", "pharmacy", "dental", "therapy"],
+        "license_types": ["Medical License", "Nursing License", "Pharmacy License", "Dental License"],
+        "requirements": ["Education verification", "Examination", "Background check", "Continuing education"],
+        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+      },
+      "automotive": {
+        "keywords": ["automotive", "car", "auto", "mechanic", "dealership", "repair"],
+        "license_types": ["Auto Dealer License", "Mechanic License", "Auto Repair License", "Sales License"],
+        "requirements": ["Experience verification", "Background check", "Financial responsibility", "Examination"],
+        "fees": ["Application fee", "License fee", "Bond fee", "Renewal fee"]
+      },
+      "beauty": {
+        "keywords": ["beauty", "salon", "cosmetology", "hair", "nail", "spa"],
+        "license_types": ["Cosmetology License", "Hair Stylist License", "Nail Technician License", "Esthetician License"],
+        "requirements": ["Education completion", "Examination", "Background check", "Continuing education"],
+        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+      },
+      "financial": {
+        "keywords": ["financial", "insurance", "banking", "investment", "accounting", "tax"],
+        "license_types": ["Insurance License", "Securities License", "Accounting License", "Tax Preparer License"],
+        "requirements": ["Education verification", "Examination", "Background check", "Continuing education"],
+        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+      }
+    },
+    "generic_resources": {
+      "main": {
+        "name": "State Business Licensing",
+        "url": "https://{domain}/",
+        "description": "Official state business licensing website"
+      },
+      "corporations": {
+        "name": "State Division of Corporations",
+        "url": "https://{domain}/business/",
+        "description": "Business entity registration"
+      },
+      "revenue": {
+        "name": "State Department of Revenue",
+        "url": "https://{domain}/tax/",
+        "description": "Tax and revenue information"
+      },
+      "labor": {
+        "name": "State Department of Labor",
+        "url": "https://{domain}/labor/",
+        "description": "Employment and workplace information"
+      }
+    },
+    "local_government_patterns": {
+      "counties": [
+        {
+          "name": "{County} County",
+          "url": "https://www.{county}.gov/"
+        }
+      ],
+      "cities": [
+        {
+          "name": "City of {City}",
+          "url": "https://www.{city}.gov/"
+        }
+      ]
+    },
+    "business_support_patterns": [
+      {
+        "name": "{State} Economic Development",
+        "url": "https://www.{state}.gov/business/"
+      },
+      {
+        "name": "{State} Chamber of Commerce",
+        "url": "https://www.{state}chamber.com/"
+      },
+      {
+        "name": "{State} SBA",
+        "url": "https://www.sba.gov/offices/district/{state_abbr}"
+      },
+      {
+        "name": "{State} SCORE",
+        "url": "https://{state}.score.org/"
+      }
+    ],
+    "mcp_servers": {
+      "rag_server": {
+        "module": "generic_rag.generic_rag_server",
+        "class": "GenericRAGServer",
+        "config": {
+          "collection_name": "generic_licenses",
+          "embedding_model": "all-MiniLM-L6-v2",
+          "vector_size": 384
+        }
+      },
+      "mcp_server": {
+        "module": "generic_rag.generic_mcp_server",
+        "class": "GenericLicenseServer"
+      }
+    },
+    "scraping_config": {
+      "base_url": "https://{domain}/",
+      "allowed_domains": ["{domain}"],
+      "selectors": {
+        "license_categories": "h2, h3, h4, h5",
+        "license_details": "p, li, div",
+        "business_steps": "ol, ul, li"
+      }
+    }
+  },
   "default_capabilities": {
     "rag_enabled": false,
     "mcp_enabled": false,
