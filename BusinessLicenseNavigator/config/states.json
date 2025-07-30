@@ -1,0 +1,405 @@
+{
+  "states": {
+    "DE": {
+      "name": "Delaware",
+      "full_name": "State of Delaware",
+      "nickname": "The First State",
+      "type": "state",
+      "country": "US",
+      "capabilities": {
+        "rag_enabled": true,
+        "mcp_enabled": true,
+        "web_scraping": true,
+        "official_apis": false
+      },
+      "resources": {
+        "main": {
+          "name": "Business First Steps",
+          "url": "https://firststeps.delaware.gov/",
+          "description": "Official Delaware government website for business licenses and registrations"
+        },
+        "corporations": {
+          "name": "Division of Corporations",
+          "url": "https://corp.delaware.gov/",
+          "description": "Delaware business entity registration"
+        },
+        "state": {
+          "name": "Department of State",
+          "url": "https://sos.delaware.gov/",
+          "description": "Delaware Secretary of State"
+        },
+        "revenue": {
+          "name": "Division of Revenue",
+          "url": "https://revenue.delaware.gov/",
+          "description": "Delaware tax and revenue information"
+        },
+        "labor": {
+          "name": "Department of Labor",
+          "url": "https://labor.delaware.gov/",
+          "description": "Delaware employment and workplace information"
+        },
+        "health": {
+          "name": "Health & Social Services",
+          "url": "https://dhss.delaware.gov/",
+          "description": "Delaware health and social services"
+        }
+      },
+      "local_governments": {
+        "counties": [
+          {
+            "name": "New Castle County",
+            "url": "https://www.nccde.org/"
+          },
+          {
+            "name": "Kent County",
+            "url": "https://www.co.kent.de.us/"
+          },
+          {
+            "name": "Sussex County",
+            "url": "https://www.sussexcountyde.gov/"
+          }
+        ],
+        "cities": [
+          {
+            "name": "City of Wilmington",
+            "url": "https://www.wilmingtonde.gov/"
+          },
+          {
+            "name": "City of Dover",
+            "url": "https://www.cityofdover.com/"
+          },
+          {
+            "name": "City of Newark",
+            "url": "https://www.newarkde.gov/"
+          }
+        ]
+      },
+      "business_support": [
+        {
+          "name": "Delaware Economic Development",
+          "url": "https://choosedelaware.com/"
+        },
+        {
+          "name": "Delaware Chamber of Commerce",
+          "url": "https://www.delawarechamber.com/"
+        },
+        {
+          "name": "Delaware SBA",
+          "url": "https://www.sba.gov/offices/district/de/wilmington"
+        },
+        {
+          "name": "Delaware SCORE",
+          "url": "https://delaware.score.org/"
+        },
+        {
+          "name": "Delaware Small Business Development Center",
+          "url": "https://www.delawaresbdc.org/"
+        }
+      ],
+      "mcp_servers": {
+        "rag_server": {
+          "module": "delaware_rag.delaware_rag_server",
+          "class": "DelawareRAGServer",
+          "config": {
+            "collection_name": "delaware_licenses",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "vector_size": 384
+          }
+        },
+        "mcp_server": {
+          "module": "delaware_rag.delaware_mcp_server",
+          "class": "DelawareLicenseServer"
+        }
+      },
+      "scraping_config": {
+        "base_url": "https://firststeps.delaware.gov/topics/",
+        "allowed_domains": [
+          "firststeps.delaware.gov",
+          "corp.delaware.gov",
+          "sos.delaware.gov",
+          "revenue.delaware.gov",
+          "labor.delaware.gov",
+          "dhss.delaware.gov"
+        ],
+        "selectors": {
+          "license_categories": "h2, h3, h4, h5",
+          "license_details": "p, li, div",
+          "business_steps": "ol, ul, li"
+        }
+      },
+      "business_types": {
+        "cannabis": {
+          "keywords": ["cannabis", "marijuana", "weed", "dispensary", "pot"],
+          "resources": [
+            {
+              "name": "Delaware Cannabis Compliance Commission",
+              "url": "https://cannabis.delaware.gov/"
+            },
+            {
+              "name": "Cannabis Licensing Portal",
+              "url": "https://cannabis.delaware.gov/licensing/"
+            },
+            {
+              "name": "Cannabis Regulations",
+              "url": "https://cannabis.delaware.gov/regulations/"
+            }
+          ],
+          "contact": {
+            "phone": "1-800-292-7935",
+            "name": "DCCC Helpline"
+          }
+        },
+        "creative": {
+          "keywords": ["art", "studio", "gallery", "creative", "artist"],
+          "resources": [
+            {
+              "name": "Delaware Division of the Arts",
+              "url": "https://arts.delaware.gov/"
+            },
+            {
+              "name": "Delaware Creative Economy",
+              "url": "https://choosedelaware.com/creative-economy/"
+            },
+            {
+              "name": "Delaware Arts Alliance",
+              "url": "https://www.delawareartsalliance.org/"
+            }
+          ],
+          "contact": {
+            "phone": "302-577-8278",
+            "name": "Division of the Arts"
+          }
+        }
+      }
+    },
+    "TX": {
+      "name": "Texas",
+      "full_name": "State of Texas",
+      "nickname": "The Lone Star State",
+      "type": "state",
+      "country": "US",
+      "capabilities": {
+        "rag_enabled": false,
+        "mcp_enabled": false,
+        "web_scraping": true,
+        "official_apis": false
+      },
+      "resources": {
+        "main": {
+          "name": "Texas Secretary of State",
+          "url": "https://www.sos.state.tx.us/",
+          "description": "Official Texas government website for business registrations"
+        },
+        "comptroller": {
+          "name": "Texas Comptroller",
+          "url": "https://comptroller.texas.gov/",
+          "description": "Texas tax and revenue information"
+        },
+        "workforce": {
+          "name": "Texas Workforce Commission",
+          "url": "https://www.twc.texas.gov/",
+          "description": "Texas employment and workplace information"
+        }
+      },
+      "local_governments": {
+        "counties": [
+          {
+            "name": "Harris County",
+            "url": "https://www.harriscountytx.gov/"
+          },
+          {
+            "name": "Dallas County",
+            "url": "https://www.dallascounty.org/"
+          }
+        ],
+        "cities": [
+          {
+            "name": "City of Houston",
+            "url": "https://www.houstontx.gov/"
+          },
+          {
+            "name": "City of Dallas",
+            "url": "https://dallascityhall.com/"
+          }
+        ]
+      },
+      "business_support": [
+        {
+          "name": "Texas Economic Development",
+          "url": "https://gov.texas.gov/business/"
+        },
+        {
+          "name": "Texas Chamber of Commerce",
+          "url": "https://www.txchamber.com/"
+        }
+      ],
+      "scraping_config": {
+        "base_url": "https://www.sos.state.tx.us/",
+        "allowed_domains": [
+          "sos.state.tx.us",
+          "comptroller.texas.gov",
+          "twc.texas.gov"
+        ],
+        "selectors": {
+          "license_categories": "h2, h3, h4, h5",
+          "license_details": "p, li, div",
+          "business_steps": "ol, ul, li"
+        }
+      }
+    },
+    "CA": {
+      "name": "California",
+      "full_name": "State of California",
+      "nickname": "The Golden State",
+      "type": "state",
+      "country": "US",
+      "capabilities": {
+        "rag_enabled": false,
+        "mcp_enabled": false,
+        "web_scraping": true,
+        "official_apis": false
+      },
+      "resources": {
+        "main": {
+          "name": "California Secretary of State",
+          "url": "https://www.sos.ca.gov/",
+          "description": "Official California government website for business registrations"
+        },
+        "tax": {
+          "name": "California Department of Tax",
+          "url": "https://www.cdtfa.ca.gov/",
+          "description": "California tax and revenue information"
+        },
+        "employment": {
+          "name": "California Employment Development",
+          "url": "https://www.edd.ca.gov/",
+          "description": "California employment and workplace information"
+        }
+      },
+      "local_governments": {
+        "counties": [
+          {
+            "name": "Los Angeles County",
+            "url": "https://lacounty.gov/"
+          },
+          {
+            "name": "San Francisco County",
+            "url": "https://sfgov.org/"
+          }
+        ],
+        "cities": [
+          {
+            "name": "City of Los Angeles",
+            "url": "https://www.lacity.org/"
+          },
+          {
+            "name": "City of San Francisco",
+            "url": "https://sf.gov/"
+          }
+        ]
+      },
+      "business_support": [
+        {
+          "name": "California Economic Development",
+          "url": "https://business.ca.gov/"
+        },
+        {
+          "name": "California Chamber of Commerce",
+          "url": "https://advocacy.calchamber.com/"
+        }
+      ],
+      "scraping_config": {
+        "base_url": "https://www.sos.ca.gov/",
+        "allowed_domains": [
+          "sos.ca.gov",
+          "cdtfa.ca.gov",
+          "edd.ca.gov"
+        ],
+        "selectors": {
+          "license_categories": "h2, h3, h4, h5",
+          "license_details": "p, li, div",
+          "business_steps": "ol, ul, li"
+        }
+      }
+    },
+    "ON": {
+      "name": "Ontario",
+      "full_name": "Province of Ontario",
+      "nickname": "The Heartland Province",
+      "type": "province",
+      "country": "CA",
+      "capabilities": {
+        "rag_enabled": false,
+        "mcp_enabled": false,
+        "web_scraping": true,
+        "official_apis": false
+      },
+      "resources": {
+        "main": {
+          "name": "Ontario Business Registry",
+          "url": "https://www.ontario.ca/page/ontario-business-registry",
+          "description": "Official Ontario government website for business registrations"
+        },
+        "tax": {
+          "name": "Ontario Ministry of Finance",
+          "url": "https://www.ontario.ca/page/ministry-finance",
+          "description": "Ontario tax and revenue information"
+        },
+        "labor": {
+          "name": "Ontario Ministry of Labour",
+          "url": "https://www.ontario.ca/page/ministry-labour",
+          "description": "Ontario employment and workplace information"
+        }
+      },
+      "local_governments": {
+        "municipalities": [
+          {
+            "name": "City of Toronto",
+            "url": "https://www.toronto.ca/"
+          },
+          {
+            "name": "City of Ottawa",
+            "url": "https://ottawa.ca/"
+          }
+        ]
+      },
+      "business_support": [
+        {
+          "name": "Ontario Economic Development",
+          "url": "https://www.ontario.ca/page/economic-development"
+        },
+        {
+          "name": "Ontario Chamber of Commerce",
+          "url": "https://occ.ca/"
+        }
+      ],
+      "scraping_config": {
+        "base_url": "https://www.ontario.ca/",
+        "allowed_domains": [
+          "ontario.ca"
+        ],
+        "selectors": {
+          "license_categories": "h2, h3, h4, h5",
+          "license_details": "p, li, div",
+          "business_steps": "ol, ul, li"
+        }
+      }
+    }
+  },
+  "default_capabilities": {
+    "rag_enabled": false,
+    "mcp_enabled": false,
+    "web_scraping": true,
+    "official_apis": false
+  },
+  "supported_countries": {
+    "US": {
+      "name": "United States",
+      "states": ["DE", "TX", "CA", "NY", "FL", "IL", "PA", "OH", "GA", "NC"]
+    },
+    "CA": {
+      "name": "Canada",
+      "provinces": ["ON", "BC", "AB", "QC", "NS", "NB", "MB", "SK", "PE", "NL"]
+    }
+  }
+} 

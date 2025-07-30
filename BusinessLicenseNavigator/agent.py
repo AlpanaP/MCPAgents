@@ -11,23 +11,33 @@ from typing import Optional
 # Load environment variables from .env file
 load_dotenv()
 
-# Add the parent directory to the path so we can import Delaware RAG tools
+# Add the parent directory to the path so we can import tools
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-try:
-    from delaware_rag.delaware_rag_server import DelawareRAGServer
-    DELAWARE_RAG_AVAILABLE = True
-except ImportError:
-    DELAWARE_RAG_AVAILABLE = False
-    print("Warning: Delaware RAG tools not available. Install dependencies with: pip install -r requirements.txt")
-
-# Import the generic business handler
+# Import the generic handlers
 try:
     from utils.business_handler import BusinessTypeHandler
+    from utils.state_handler import StateHandler
+    from utils.mcp_factory import MCPFactory
+    
     business_handler = BusinessTypeHandler()
-except ImportError:
-    print("Warning: Business type handler not available")
+    state_handler = StateHandler()
+    mcp_factory = MCPFactory(state_handler)
+    
+    # Check if Delaware RAG is available for backward compatibility
+    try:
+        from delaware_rag.delaware_rag_server import DelawareRAGServer
+        DELAWARE_RAG_AVAILABLE = True
+    except ImportError:
+        DELAWARE_RAG_AVAILABLE = False
+        print("Warning: Delaware RAG tools not available. Install dependencies with: pip install -r requirements.txt")
+        
+except ImportError as e:
+    print(f"Warning: Generic handlers not available: {e}")
     business_handler = None
+    state_handler = None
+    mcp_factory = None
+    DELAWARE_RAG_AVAILABLE = False
 
 
 def sanitize_input(text: str) -> str:
@@ -127,9 +137,9 @@ def call_ollama(model: str, prompt: str) -> str:
         return f"ERROR: {str(e)}"
 
 
-async def get_delaware_license_info(business_description: str) -> Optional[str]:
-    """Get Delaware-specific license information using RAG tools"""
-    if not DELAWARE_RAG_AVAILABLE:
+async def get_state_license_info(business_description: str) -> Optional[str]:
+    """Get state-specific license information using RAG tools and MCP servers."""
+    if not state_handler:
         return None
     
     # Validate input
@@ -141,76 +151,60 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
         return None
     
     try:
-        server = DelawareRAGServer()
+        # Detect state from query
+        state_code = state_handler.detect_state_from_query(sanitized_description)
+        if not state_code:
+            return None
         
-        # Use generic business handler to detect business type
+        # Get state configuration
+        state_config = state_handler.get_state_config(state_code)
+        if not state_config:
+            return None
+        
+        state_name = state_config.get("name", "Unknown State")
+        state_type = state_config.get("type", "state")
+        
+        # Generate state-specific guidance
         business_type = None
         if business_handler:
             business_type = business_handler.detect_business_type(sanitized_description)
         
-        # Get Delaware license information
-        delaware_info = "## 🏛️ Delaware Business License Information\n\n"
-        delaware_info += "**Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)\n\n"
+        state_info = f"## 🏛️ {state_name} {state_type.title()} Business License Information\n\n"
+        state_info += f"**Location**: {state_name} ({state_code})\n\n"
         
-        # Get business steps
-        steps_result = await server._get_business_steps()
-        if steps_result and not steps_result.content[0].text.startswith("Error"):
-            delaware_info += "### 📋 Delaware Business Steps:\n"
-            delaware_info += steps_result.content[0].text.split("Source:")[0] + "\n\n"
+        # Add state-specific guidance
+        state_guidance = state_handler.generate_state_guidance(state_code, sanitized_description, business_type)
+        state_info += state_guidance
         
-        # Get license categories
-        categories_result = await server._get_license_categories()
-        if categories_result and not categories_result.content[0].text.startswith("Error"):
-            delaware_info += "### 🏢 Available License Categories:\n"
-            delaware_info += categories_result.content[0].text.split("Source:")[0] + "\n\n"
+        # Try to get RAG data if available
+        if state_handler.is_rag_enabled(state_code) and mcp_factory:
+            rag_server = mcp_factory.create_rag_server(state_code)
+            if rag_server:
+                try:
+                    # Get business steps
+                    steps_result = await rag_server._get_business_steps()
+                    if steps_result and not steps_result.content[0].text.startswith("Error"):
+                        state_info += "### 📋 Business Steps:\n"
+                        state_info += steps_result.content[0].text.split("Source:")[0] + "\n\n"
+                    
+                    # Get license categories
+                    categories_result = await rag_server._get_license_categories()
+                    if categories_result and not categories_result.content[0].text.startswith("Error"):
+                        state_info += "### 🏢 Available License Categories:\n"
+                        state_info += categories_result.content[0].text.split("Source:")[0] + "\n\n"
+                        
+                except Exception as e:
+                    print(f"Error getting RAG data for {state_code}: {e}")
         
-        # Generate business-specific guidance using the generic handler
+        # Add business type specific guidance if available
         if business_type and business_handler:
             business_guidance = business_handler.generate_business_guidance(business_type, sanitized_description)
-            delaware_info += business_guidance
-        else:
-            # Fallback to general guidance
-            if business_handler:
-                delaware_info += business_handler.generate_business_guidance("general", sanitized_description)
-            else:
-                delaware_info += "## 🏢 Delaware General Business Requirements\n\n"
-                delaware_info += "For specific business type guidance, please contact Delaware Business First Steps.\n\n"
+            state_info += business_guidance
         
-        # Add comprehensive Delaware resources
-        delaware_info += "### 💰 Delaware Tax Resources:\n"
-        delaware_info += "- **Division of Revenue**: https://revenue.delaware.gov/\n"
-        delaware_info += "- **Business Tax Registration**: https://revenue.delaware.gov/business-tax-registration/\n"
-        delaware_info += "- **Sales Tax**: https://revenue.delaware.gov/sales-tax/\n"
-        delaware_info += "- **Corporate Income Tax**: https://revenue.delaware.gov/corporate-income-tax/\n\n"
-        
-        # Add employment resources
-        delaware_info += "### 👥 Delaware Employment Resources:\n"
-        delaware_info += "- **Department of Labor**: https://labor.delaware.gov/\n"
-        delaware_info += "- **Workers Compensation**: https://labor.delaware.gov/workers-compensation/\n"
-        delaware_info += "- **Unemployment Insurance**: https://labor.delaware.gov/unemployment-insurance/\n"
-        delaware_info += "- **Workplace Safety**: https://labor.delaware.gov/workplace-safety/\n\n"
-        
-        # Add local government resources
-        delaware_info += "### 🏘️ Delaware Local Government Resources:\n"
-        delaware_info += "- **New Castle County**: https://www.nccde.org/\n"
-        delaware_info += "- **Kent County**: https://www.co.kent.de.us/\n"
-        delaware_info += "- **Sussex County**: https://www.sussexcountyde.gov/\n"
-        delaware_info += "- **City of Wilmington**: https://www.wilmingtonde.gov/\n"
-        delaware_info += "- **City of Dover**: https://www.cityofdover.com/\n"
-        delaware_info += "- **City of Newark**: https://www.newarkde.gov/\n\n"
-        
-        # Add business support resources
-        delaware_info += "### 🚀 Delaware Business Support Resources:\n"
-        delaware_info += "- **Delaware Economic Development**: https://choosedelaware.com/\n"
-        delaware_info += "- **Delaware Chamber of Commerce**: https://www.delawarechamber.com/\n"
-        delaware_info += "- **Delaware SBA**: https://www.sba.gov/offices/district/de/wilmington\n"
-        delaware_info += "- **Delaware SCORE**: https://delaware.score.org/\n"
-        delaware_info += "- **Delaware Small Business Development Center**: https://www.delawaresbdc.org/\n\n"
-        
-        return delaware_info
+        return state_info
         
     except Exception as e:
-        print(f"Error getting Delaware license info: {e}")
+        print(f"Error getting state license info: {e}")
         return None
 
 
@@ -315,66 +309,80 @@ def get_fallback_response(business_description):
     return guidance
 
 
-def get_source_attribution(ai_used, delaware_rag_used, business_description):
+def get_source_attribution(ai_used, state_rag_used, business_description):
     """Generate source attribution information"""
     sources = []
     location_info = ""
     
-    # Check if this is a Delaware query
-    business_lower = business_description.lower()
-    is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
-    
-    # Use generic business handler to detect business type
+    # Use state handler to detect state and business type
+    state_code = None
     business_type = None
-    if business_handler:
-        business_type = business_handler.detect_business_type(business_description)
+    
+    if state_handler:
+        state_code = state_handler.detect_state_from_query(business_description)
+        if business_handler:
+            business_type = business_handler.detect_business_type(business_description)
     
     if ai_used:
         sources.append(f"**AI Source**: {ai_used}")
     
-    if delaware_rag_used:
-        sources.append("**Delaware Data Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)")
-        sources.append("**Vector Database**: Qdrant with semantic search")
-        sources.append("**Delaware Government Resources**: [Division of Corporations](https://corp.delaware.gov/), [Department of State](https://sos.delaware.gov/), [Division of Revenue](https://revenue.delaware.gov/)")
-        
-        # Add business-specific sources using the generic handler
-        if business_type and business_handler:
-            business_sources = business_handler.get_business_sources(business_type)
-            sources.extend(business_sources)
+    if state_rag_used and state_code:
+        state_config = state_handler.get_state_config(state_code)
+        if state_config:
+            state_name = state_config.get("name", "Unknown State")
+            state_type = state_config.get("type", "state")
+            
+            sources.append(f"**{state_name} Data Source**: {state_name} government websites")
+            
+            if state_handler.is_rag_enabled(state_code):
+                sources.append("**Vector Database**: Qdrant with semantic search")
+            
+            # Add state-specific resources
+            resources = state_handler.get_state_resources(state_code)
+            for category, resource in resources.items():
+                if isinstance(resource, dict):
+                    name = resource.get("name", "")
+                    url = resource.get("url", "")
+                    sources.append(f"**{name}**: [{name}]({url})")
+            
+            # Add business type specific sources
+            if business_type:
+                business_sources = state_handler.get_state_sources(state_code, business_type)
+                sources.extend(business_sources)
     
     # Detect location from business description
-    if is_delaware_query:
-        location_info = "**Location**: Delaware"
-        sources.append("**State Resources**: Delaware government websites")
-        sources.append("**Delaware Specific Links**: [Business First Steps](https://firststeps.delaware.gov/), [Professional Licensing](https://sos.delaware.gov/professional-regulation/), [Tax Registration](https://revenue.delaware.gov/business-tax-registration/)")
-        
-        # Add business-specific Delaware resources
-        if business_type and business_handler:
-            config = business_handler.get_business_config(business_type)
-            if config:
-                title = config.get("title", "Business Requirements")
-                icon = config.get("icon", "🏢")
-                sources.append(f"**Delaware {title}**: {icon} {title}")
+    if state_code:
+        state_config = state_handler.get_state_config(state_code)
+        if state_config:
+            state_name = state_config.get("name", "Unknown State")
+            state_type = state_config.get("type", "state")
+            country = state_config.get("country", "US")
+            
+            location_info = f"**Location**: {state_name} ({state_code}), {country}"
+            sources.append(f"**State Resources**: {state_name} government websites")
+            
+            # Add state-specific links
+            resources = state_handler.get_state_resources(state_code)
+            main_resource = resources.get("main", {})
+            if main_resource:
+                name = main_resource.get("name", "")
+                url = main_resource.get("url", "")
+                sources.append(f"**{state_name} Specific Links**: [{name}]({url})")
     
-    elif any(word in business_lower for word in ['texas', 'tx']):
+    elif any(word in business_description.lower() for word in ['texas', 'tx']):
         location_info = "**Location**: Texas"
         sources.append("**State Resources**: Texas Secretary of State")
         sources.append("**Texas Specific Links**: [Texas Secretary of State](https://www.sos.state.tx.us/), [Texas Comptroller](https://comptroller.texas.gov/), [Texas Workforce Commission](https://www.twc.texas.gov/)")
     
-    elif any(word in business_lower for word in ['california', 'ca', 'cali']):
+    elif any(word in business_description.lower() for word in ['california', 'ca', 'cali']):
         location_info = "**Location**: California"
         sources.append("**State Resources**: California Secretary of State")
         sources.append("**California Specific Links**: [CA Secretary of State](https://www.sos.ca.gov/), [CA Department of Tax](https://www.cdtfa.ca.gov/), [CA Employment Development](https://www.edd.ca.gov/)")
     
-    elif any(word in business_lower for word in ['new york', 'ny', 'nyc']):
-        location_info = "**Location**: New York"
-        sources.append("**State Resources**: New York Department of State")
-        sources.append("**New York Specific Links**: [NY Department of State](https://www.dos.ny.gov/), [NY Department of Tax](https://www.tax.ny.gov/), [NY Department of Labor](https://www.labor.ny.gov/)")
-    
-    elif any(word in business_lower for word in ['florida', 'fl']):
-        location_info = "**Location**: Florida"
-        sources.append("**State Resources**: Florida Department of State")
-        sources.append("**Florida Specific Links**: [FL Department of State](https://dos.myflorida.com/), [FL Department of Revenue](https://floridarevenue.com/), [FL Department of Economic Opportunity](https://floridajobs.org/)")
+    elif any(word in business_description.lower() for word in ['ontario', 'on']):
+        location_info = "**Location**: Ontario, Canada"
+        sources.append("**Province Resources**: Ontario Business Registry")
+        sources.append("**Ontario Specific Links**: [Ontario Business Registry](https://www.ontario.ca/page/ontario-business-registry), [Ontario Ministry of Finance](https://www.ontario.ca/page/ministry-finance)")
     
     else:
         location_info = "**Location**: General (Multiple States)"
@@ -388,87 +396,83 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
 
 
 async def run_agent_async(user_input: str) -> str:
-    """Run the business license navigator agent with Delaware RAG integration"""
-    
-    # Validate input
-    if not user_input or not isinstance(user_input, str):
-        return "ERROR: Invalid input provided"
-    
-    sanitized_input = sanitize_input(user_input)
-    if not sanitized_input:
-        return "ERROR: Input is empty or contains invalid characters"
-    
-    # Check if this is a Delaware-specific query
-    business_lower = sanitized_input.lower()
-    is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
-    
-    # Create a prompt for business license guidance
-    prompt = f"""
-    You are a helpful business license navigator. A user has provided the following information about their business:
-    
-    {sanitized_input}
-    
-    Please provide guidance on:
-    1. What type of business license they might need
-    2. Any specific permits required
-    3. Steps they should take to obtain the necessary licenses
-    4. Any additional considerations for their business type and location
-    
-    Be helpful, specific, and provide actionable advice. Format your response with clear headings and bullet points.
-    """
-    
-    # Try Gemini API first
-    api_key = os.getenv('GEMINI_API_KEY')
-    ai_response = None
-    ai_source = None
-    
-    if api_key and validate_api_key(api_key):
-        ai_response = call_gemini(prompt, api_key)
-        if not ai_response.startswith("ERROR:"):
-            ai_source = "Gemini"
+    """Run the agent asynchronously with user input"""
+    try:
+        # Validate and sanitize input
+        if not user_input or not isinstance(user_input, str):
+            return "Please provide a valid business description."
+        
+        sanitized_input = sanitize_input(user_input)
+        if not sanitized_input:
+            return "Please provide a valid business description."
+        
+        # Detect state from query
+        state_code = None
+        is_state_query = False
+        if state_handler:
+            state_code = state_handler.detect_state_from_query(sanitized_input)
+            is_state_query = state_code is not None
+        
+        # Get state-specific information if available
+        state_info = None
+        if is_state_query and state_handler:
+            state_info = await get_state_license_info(sanitized_input)
+        
+        # Generate source attribution
+        ai_source = "Gemini"
+        state_rag_used = state_info is not None
+        
+        location_info, sources = get_source_attribution(ai_source, state_rag_used, sanitized_input)
+        
+        # Build the prompt for AI
+        prompt = f"""You are a business license navigation assistant. Help the user understand the requirements for starting their business.
+
+User Query: {sanitized_input}
+
+{location_info}
+
+Please provide comprehensive guidance including:
+1. Step-by-step process for business registration
+2. Required licenses and permits
+3. Important compliance requirements
+4. Useful resources and contact information
+5. Next steps and timeline
+
+Make sure to include specific, actionable advice and relevant links to official government websites.
+
+Sources used: {', '.join(sources[:5])}  # Limit to first 5 sources for brevity
+"""
+
+        # Try to call Gemini API
+        api_key = os.getenv('GEMINI_API_KEY')
+        if api_key and validate_api_key(api_key):
+            try:
+                ai_response = call_gemini(prompt, api_key)
+                if not ai_response.startswith("ERROR"):
+                    ai_source = "Gemini"
+                else:
+                    raise Exception(ai_response)
+            except Exception as e:
+                print(f"Gemini API error: {e}")
+                ai_response = get_fallback_response(sanitized_input)
+                ai_source = "Fallback"
         else:
-            ai_response = None
-    
-    # Try Ollama as fallback if Gemini failed
-    if not ai_response:
-        ollama_response = call_ollama("llama3.1:8b", prompt)
-        if not ollama_response.startswith("ERROR:"):
-            ai_response = ollama_response
-            ai_source = "Ollama"
-    
-    # Get Delaware-specific information
-    delaware_info = None
-    if is_delaware_query or DELAWARE_RAG_AVAILABLE:
-        delaware_info = await get_delaware_license_info(sanitized_input)
-    
-    # Generate source attribution
-    location_info, sources = get_source_attribution(ai_source, delaware_info is not None, sanitized_input)
-    
-    # Combine AI response with Delaware-specific information
-    final_response = ""
-    
-    # Add source attribution at the top
-    final_response += "## 📍 Response Sources\n\n"
-    final_response += f"{location_info}\n\n"
-    final_response += "**Information Sources:**\n"
-    for source in sources:
-        final_response += f"- {source}\n"
-    final_response += "\n---\n\n"
-    
-    if ai_response:
-        final_response += "## 🤖 AI-Powered Business License Guidance\n\n"
-        final_response += ai_response + "\n\n"
-    
-    # Add Delaware-specific information if available and relevant
-    if delaware_info:
-        final_response += delaware_info
-    
-    # If no AI response, use fallback
-    if not ai_response:
-        final_response += "## 📋 General Business License Guidance\n\n"
-        final_response += get_fallback_response(sanitized_input)
-    
-    return final_response
+            ai_response = get_fallback_response(sanitized_input)
+            ai_source = "Fallback"
+        
+        # Combine AI response with state-specific information
+        final_response = f"📍 **Response Sources**: {location_info}\n\n"
+        
+        if state_info:
+            final_response += state_info + "\n\n"
+        
+        final_response += ai_response
+        
+        return final_response
+        
+    except Exception as e:
+        print(f"Error in run_agent_async: {e}")
+        return f"An error occurred while processing your request. Please try again. Error: {str(e)}"
 
 
 def run_agent(user_input: str) -> str:
