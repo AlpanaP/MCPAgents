@@ -5,6 +5,8 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import asyncio
 import sys
+import re
+from typing import Optional
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,29 +22,88 @@ except ImportError:
     print("Warning: Delaware RAG tools not available. Install dependencies with: pip install -r requirements.txt")
 
 
-def call_gemini(prompt, api_key):
+def sanitize_input(text: str) -> str:
+    """Sanitize user input to prevent injection attacks."""
+    if not text or not isinstance(text, str):
+        return ""
+    
+    # Remove potentially dangerous characters
+    text = re.sub(r'[<>"\']', '', text)
+    # Limit length to prevent DoS
+    return text[:1000].strip()
+
+
+def validate_api_key(api_key: str) -> bool:
+    """Validate API key format."""
+    if not api_key or not isinstance(api_key, str):
+        return False
+    
+    # Basic validation for Gemini API key format
+    if api_key.startswith('AI') and len(api_key) > 20:
+        return True
+    
+    return False
+
+
+def call_gemini(prompt: str, api_key: str) -> str:
     """Call Gemini API with a prompt"""
     try:
+        # Validate inputs
+        if not validate_api_key(api_key):
+            return "ERROR: Invalid API key format"
+        
+        sanitized_prompt = sanitize_input(prompt)
+        if not sanitized_prompt:
+            return "ERROR: Invalid prompt"
+        
         # Configure the Gemini API
         genai.configure(api_key=api_key)
         
         # Use the Gemini Pro model
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # Generate response
-        response = model.generate_content(prompt)
+        # Generate response with safety settings
+        response = model.generate_content(
+            sanitized_prompt,
+            safety_settings=[
+                {
+                    "category": "HARM_CATEGORY_HARASSMENT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_HATE_SPEECH",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                }
+            ]
+        )
         
         return response.text
     except Exception as e:
         return f"ERROR: {str(e)}"
 
 
-def call_ollama(model, prompt):
+def call_ollama(model: str, prompt: str) -> str:
     """Simple function to call Ollama with a prompt (kept for local development)"""
+    # Validate inputs
+    if not model or not isinstance(model, str):
+        return "ERROR: Invalid model name"
+    
+    sanitized_prompt = sanitize_input(prompt)
+    if not sanitized_prompt:
+        return "ERROR: Invalid prompt"
+    
     url = "http://localhost:11434/api/generate"
     data = {
         "model": model,
-        "prompt": prompt,
+        "prompt": sanitized_prompt,
         "stream": False
     }
     
@@ -58,16 +119,24 @@ def call_ollama(model, prompt):
         return f"ERROR: {str(e)}"
 
 
-async def get_delaware_license_info(business_description):
+async def get_delaware_license_info(business_description: str) -> Optional[str]:
     """Get Delaware-specific license information using RAG tools"""
     if not DELAWARE_RAG_AVAILABLE:
+        return None
+    
+    # Validate input
+    if not business_description or not isinstance(business_description, str):
+        return None
+    
+    sanitized_description = sanitize_input(business_description)
+    if not sanitized_description:
         return None
     
     try:
         server = DelawareRAGServer()
         
         # Extract business type from description
-        business_lower = business_description.lower()
+        business_lower = sanitized_description.lower()
         
         # Determine search query based on business type
         search_query = ""
@@ -334,18 +403,26 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
     return location_info, sources
 
 
-async def run_agent_async(user_input):
+async def run_agent_async(user_input: str) -> str:
     """Run the business license navigator agent with Delaware RAG integration"""
     
+    # Validate input
+    if not user_input or not isinstance(user_input, str):
+        return "ERROR: Invalid input provided"
+    
+    sanitized_input = sanitize_input(user_input)
+    if not sanitized_input:
+        return "ERROR: Input is empty or contains invalid characters"
+    
     # Check if this is a Delaware-specific query
-    business_lower = user_input.lower()
+    business_lower = sanitized_input.lower()
     is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
     
     # Create a prompt for business license guidance
     prompt = f"""
     You are a helpful business license navigator. A user has provided the following information about their business:
     
-    {user_input}
+    {sanitized_input}
     
     Please provide guidance on:
     1. What type of business license they might need
@@ -361,7 +438,7 @@ async def run_agent_async(user_input):
     ai_response = None
     ai_source = None
     
-    if api_key:
+    if api_key and validate_api_key(api_key):
         ai_response = call_gemini(prompt, api_key)
         if not ai_response.startswith("ERROR:"):
             ai_source = "Gemini"
@@ -378,10 +455,10 @@ async def run_agent_async(user_input):
     # Get Delaware-specific information
     delaware_info = None
     if is_delaware_query or DELAWARE_RAG_AVAILABLE:
-        delaware_info = await get_delaware_license_info(user_input)
+        delaware_info = await get_delaware_license_info(sanitized_input)
     
     # Generate source attribution
-    location_info, sources = get_source_attribution(ai_source, delaware_info is not None, user_input)
+    location_info, sources = get_source_attribution(ai_source, delaware_info is not None, sanitized_input)
     
     # Combine AI response with Delaware-specific information
     final_response = ""
@@ -405,18 +482,22 @@ async def run_agent_async(user_input):
     # If no AI response, use fallback
     if not ai_response:
         final_response += "## 📋 General Business License Guidance\n\n"
-        final_response += get_fallback_response(user_input)
+        final_response += get_fallback_response(sanitized_input)
     
     return final_response
 
 
-def run_agent(user_input):
+def run_agent(user_input: str) -> str:
     """Synchronous wrapper for the async agent"""
     try:
+        # Validate input
+        if not user_input or not isinstance(user_input, str):
+            return "ERROR: Invalid input provided"
+        
         return asyncio.run(run_agent_async(user_input))
     except Exception as e:
         print(f"Error in agent: {e}")
-        return get_fallback_response(user_input)
+        return get_fallback_response(user_input if isinstance(user_input, str) else "")
 
 
 if __name__ == "__main__":

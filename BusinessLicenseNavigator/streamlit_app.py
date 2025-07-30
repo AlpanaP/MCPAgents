@@ -2,9 +2,32 @@
 import streamlit as st
 import os
 import sys
+import re
+from typing import Optional
 
 # Add the current directory to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+def sanitize_input(text: str) -> str:
+    """Sanitize user input to prevent injection attacks."""
+    if not text or not isinstance(text, str):
+        return ""
+    
+    # Remove potentially dangerous characters
+    text = re.sub(r'[<>"\']', '', text)
+    # Limit length to prevent DoS
+    return text[:1000].strip()
+
+def validate_api_key(api_key: str) -> bool:
+    """Validate API key format."""
+    if not api_key or not isinstance(api_key, str):
+        return False
+    
+    # Basic validation for Gemini API key format
+    if api_key.startswith('AI') and len(api_key) > 20:
+        return True
+    
+    return False
 
 try:
     from agent import run_agent, DELAWARE_RAG_AVAILABLE
@@ -12,7 +35,7 @@ except ImportError as e:
     st.error(f"Import error: {e}")
     st.info("Please ensure all dependencies are installed")
     
-    def run_agent(user_input):
+    def run_agent(user_input: str) -> str:
         return "Error: Dependencies not available. Please check the requirements.txt file."
     
     DELAWARE_RAG_AVAILABLE = False
@@ -130,11 +153,15 @@ with st.expander("🔑 Gemini API Key Setup"):
     # Option to enter API key manually (for testing)
     manual_key = st.text_input("Gemini API Key (optional, for testing)", type="password")
     if manual_key:
-        os.environ['GEMINI_API_KEY'] = manual_key
-        st.success("✅ API key set for this session")
+        # Validate API key before setting
+        if validate_api_key(manual_key):
+            os.environ['GEMINI_API_KEY'] = manual_key
+            st.success("✅ API key set for this session")
+        else:
+            st.error("❌ Invalid API key format. Please check your key.")
 
 # Check AI availability
-gemini_available = os.getenv('GEMINI_API_KEY') is not None
+gemini_available = os.getenv('GEMINI_API_KEY') is not None and validate_api_key(os.getenv('GEMINI_API_KEY', ''))
 st.sidebar.markdown("### 🤖 AI Status")
 if gemini_available:
     st.sidebar.success("✅ Gemini AI Available")
@@ -165,24 +192,29 @@ user_input = st.text_area(
 
 if st.button("🚀 Find My License Path", type="primary"):
     if user_input.strip():
-        with st.spinner("🤖 Consulting AI agent..."):
-            try:
-                response = run_agent(user_input)
-                
-                # Check what type of response we got
-                if response.startswith("ERROR:"):
-                    st.warning("⚠️ AI not available - using general guidance")
-                    st.info("💡 Set up Gemini API key or Ollama for AI-powered guidance")
-                    st.markdown("### 📋 General License Guidance:")
-                else:
-                    st.success("✅ AI-powered guidance ready!")
-                    st.markdown("### 🤖 AI License Guidance:")
-                
-                st.write(response)
-                
-            except Exception as e:
-                st.error(f"❌ Unexpected error: {str(e)}")
-                st.info("💡 Check your API key or try the fallback mode")
+        # Sanitize user input
+        sanitized_input = sanitize_input(user_input)
+        if not sanitized_input:
+            st.error("❌ Input contains invalid characters or is too long.")
+        else:
+            with st.spinner("🤖 Consulting AI agent..."):
+                try:
+                    response = run_agent(sanitized_input)
+                    
+                    # Check what type of response we got
+                    if response.startswith("ERROR:"):
+                        st.warning("⚠️ AI not available - using general guidance")
+                        st.info("💡 Set up Gemini API key or Ollama for AI-powered guidance")
+                        st.markdown("### 📋 General License Guidance:")
+                    else:
+                        st.success("✅ AI-powered guidance ready!")
+                        st.markdown("### 🤖 AI License Guidance:")
+                    
+                    st.write(response)
+                    
+                except Exception as e:
+                    st.error(f"❌ Unexpected error: {str(e)}")
+                    st.info("💡 Check your API key or try the fallback mode")
     else:
         st.warning("Please enter a business description")
 

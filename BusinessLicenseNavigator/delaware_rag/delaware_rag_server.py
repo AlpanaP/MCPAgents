@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin, urlparse
 import requests
@@ -44,6 +45,60 @@ QDRANT_HOST = "localhost"
 QDRANT_PORT = 6333
 COLLECTION_NAME = "delaware_licenses"
 VECTOR_SIZE = 384  # all-MiniLM-L6-v2 embedding size
+
+# Security: Rate limiting and timeout settings
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
+RATE_LIMIT_DELAY = 1  # seconds between requests
+
+def sanitize_input(text: str) -> str:
+    """Sanitize user input to prevent injection attacks."""
+    if not text or not isinstance(text, str):
+        return ""
+    
+    # Remove potentially dangerous characters
+    text = re.sub(r'[<>"\']', '', text)
+    # Limit length to prevent DoS
+    return text[:500].strip()
+
+def validate_url(url: str) -> bool:
+    """Validate URL format and security."""
+    if not url or not isinstance(url, str):
+        return False
+    
+    try:
+        parsed = urlparse(url)
+        # Only allow HTTPS and specific domains
+        if parsed.scheme not in ['https']:
+            return False
+        
+        # Only allow Delaware government domains
+        allowed_domains = [
+            'firststeps.delaware.gov',
+            'corp.delaware.gov',
+            'sos.delaware.gov',
+            'revenue.delaware.gov',
+            'labor.delaware.gov',
+            'dhss.delaware.gov',
+            'delawaresbdc.org',
+            'choosedelaware.com',
+            'delawarechamber.com',
+            'sba.gov',
+            'delaware.score.org',
+            'nccde.org',
+            'co.kent.de.us',
+            'sussexcountyde.gov',
+            'wilmingtonde.gov',
+            'cityofdover.com',
+            'newarkde.gov'
+        ]
+        
+        if parsed.netloc not in allowed_domains:
+            return False
+        
+        return True
+    except Exception:
+        return False
 
 # Delaware Government Resources
 DELAWARE_RESOURCES = {
@@ -93,9 +148,19 @@ class DelawareRAGServer:
     def __init__(self):
         self.server = Server("delaware-licenses-rag")
         self.session = requests.Session()
+        
+        # Security: Set secure headers and timeouts
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
         })
+        
+        # Set timeout for all requests
+        self.session.timeout = REQUEST_TIMEOUT
         
         # Initialize RAG components
         self.embedding_model = None
@@ -163,8 +228,20 @@ class DelawareRAGServer:
         """Populate the Qdrant collection with Delaware license information."""
         try:
             logger.info("Fetching Delaware license data...")
-            response = self.session.get(DELAWARE_TOPICS_URL)
+            
+            # Validate URL before making request
+            if not validate_url(DELAWARE_TOPICS_URL):
+                logger.error("Invalid URL for Delaware topics")
+                return
+            
+            response = self.session.get(DELAWARE_TOPICS_URL, timeout=REQUEST_TIMEOUT)
             response.raise_for_status()
+            
+            # Security: Check content type
+            content_type = response.headers.get('content-type', '')
+            if 'text/html' not in content_type.lower():
+                logger.error(f"Unexpected content type: {content_type}")
+                return
             
             soup = BeautifulSoup(response.content, 'html.parser')
             license_entries = []
@@ -182,13 +259,18 @@ class DelawareRAGServer:
                         next_elem = next_elem.find_next_sibling()
                     
                     if content.strip():
-                        entry = {
-                            "text": f"{title}: {content.strip()}",
-                            "category": "Business Licenses",
-                            "license_type": title,
-                            "source": DELAWARE_TOPICS_URL
-                        }
-                        license_entries.append(entry)
+                        # Sanitize content
+                        sanitized_title = sanitize_input(title)
+                        sanitized_content = sanitize_input(content.strip())
+                        
+                        if sanitized_title and sanitized_content:
+                            entry = {
+                                "text": f"{sanitized_title}: {sanitized_content}",
+                                "category": "Business Licenses",
+                                "license_type": sanitized_title,
+                                "source": DELAWARE_TOPICS_URL
+                            }
+                            license_entries.append(entry)
             
             # Add to Qdrant collection
             if license_entries and self.qdrant_client:
