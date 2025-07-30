@@ -138,9 +138,14 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
         # Extract business type from description
         business_lower = sanitized_description.lower()
         
+        # Check for cannabis-specific queries
+        is_cannabis_query = any(word in business_lower for word in ['cannabis', 'marijuana', 'weed', 'dispensary', 'pot'])
+        
         # Determine search query based on business type
         search_query = ""
-        if any(word in business_lower for word in ['restaurant', 'food', 'bakery', 'cafe', 'catering']):
+        if is_cannabis_query:
+            search_query = "cannabis"
+        elif any(word in business_lower for word in ['restaurant', 'food', 'bakery', 'cafe', 'catering']):
             search_query = "food"
         elif any(word in business_lower for word in ['health', 'medical', 'doctor', 'nurse', 'pharmacy']):
             search_query = "health"
@@ -167,28 +172,96 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
         categories_result = await server._get_license_categories()
         if categories_result and not categories_result.content[0].text.startswith("Error"):
             delaware_info += "### 🏢 Available License Categories:\n"
-            categories_text = categories_result.content[0].text
-            # Extract categories list
-            if "Available Categories:" in categories_text:
-                categories_section = categories_text.split("Available Categories:")[1]
-                delaware_info += categories_section + "\n\n"
+            delaware_info += categories_result.content[0].text.split("Source:")[0] + "\n\n"
         
-        # Get specific license information using RAG search
-        if search_query:
-            search_result = await server._search_licenses_rag({"query": search_query, "top_k": 5})
-            if search_result and not search_result.content[0].text.startswith("Error"):
-                delaware_info += f"### 🔍 Relevant Delaware Licenses for '{search_query}':\n"
-                search_text = search_result.content[0].text
-                # Extract search results
-                if "Found" in search_text and "relevant license types:" in search_text:
-                    results_section = search_text.split("relevant license types:")[1].split("For more detailed information")[0]
-                    delaware_info += results_section + "\n\n"
-        
-        delaware_info += "### 📞 Delaware Resources:\n"
-        delaware_info += "- **Delaware Business First Steps**: https://firststeps.delaware.gov/\n"
-        delaware_info += "- **Delaware Division of Corporations**: https://corp.delaware.gov/\n"
-        delaware_info += "- **Delaware Small Business Development Center**: https://www.delawaresbdc.org/\n"
-        delaware_info += "- **Delaware Department of State**: https://sos.delaware.gov/\n\n"
+        # For cannabis queries, add specific compliance information
+        if is_cannabis_query:
+            delaware_info += "## 🌿 Delaware Cannabis Dispensary Requirements\n\n"
+            delaware_info += "### 📋 Step-by-Step Compliance Process:\n\n"
+            
+            delaware_info += "**Step 1: Pre-Application Requirements**\n"
+            delaware_info += "- ✅ Register your business with Delaware Division of Corporations\n"
+            delaware_info += "- ✅ Obtain a Delaware business license\n"
+            delaware_info += "- ✅ Secure a compliant location (500ft from schools, 1000ft from churches)\n"
+            delaware_info += "- ✅ Develop a comprehensive business plan\n"
+            delaware_info += "- ✅ Prepare financial statements and proof of funding\n\n"
+            
+            delaware_info += "**Step 2: Application Process**\n"
+            delaware_info += "- ✅ Submit application to Delaware Cannabis Compliance Commission (DCCC)\n"
+            delaware_info += "- ✅ Pay application fee ($5,000 for dispensary license)\n"
+            delaware_info += "- ✅ Provide detailed security plan\n"
+            delaware_info += "- ✅ Submit employee background check information\n"
+            delaware_info += "- ✅ Provide inventory management system details\n\n"
+            
+            delaware_info += "**Step 3: Facility Requirements**\n"
+            delaware_info += "- ✅ Install security alarm system\n"
+            delaware_info += "- ✅ Set up surveillance cameras (24/7 recording)\n"
+            delaware_info += "- ✅ Implement secure cash handling procedures\n"
+            delaware_info += "- ✅ Create secure product storage areas\n"
+            delaware_info += "- ✅ Install proper lighting and signage\n\n"
+            
+            delaware_info += "**Step 4: Staff Training & Compliance**\n"
+            delaware_info += "- ✅ Complete Delaware cannabis compliance training\n"
+            delaware_info += "- ✅ Train all employees on state regulations\n"
+            delaware_info += "- ✅ Establish record-keeping procedures\n"
+            delaware_info += "- ✅ Set up monitoring and reporting systems\n\n"
+            
+            delaware_info += "**Step 5: Operational Requirements**\n"
+            delaware_info += "- ✅ Maintain detailed sales and inventory records\n"
+            delaware_info += "- ✅ Conduct regular compliance audits\n"
+            delaware_info += "- ✅ Submit required reports to DCCC\n"
+            delaware_info += "- ✅ Renew license annually\n\n"
+            
+            delaware_info += "### 🔗 Essential Delaware Cannabis Resources:\n\n"
+            delaware_info += "**Official Government Resources:**\n"
+            delaware_info += "- 🌿 [Delaware Cannabis Compliance Commission](https://cannabis.delaware.gov/)\n"
+            delaware_info += "- 📋 [Cannabis Licensing Portal](https://cannabis.delaware.gov/licensing/)\n"
+            delaware_info += "- 📖 [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)\n"
+            delaware_info += "- 📝 [Application Portal](https://cannabis.delaware.gov/apply/)\n"
+            delaware_info += "- 📚 [Business Guide](https://cannabis.delaware.gov/business-guide/)\n"
+            delaware_info += "- 🛡️ [Compliance Requirements](https://cannabis.delaware.gov/compliance/)\n"
+            delaware_info += "- 🔒 [Security Requirements](https://cannabis.delaware.gov/security/)\n"
+            delaware_info += "- 🧪 [Testing Requirements](https://cannabis.delaware.gov/testing/)\n\n"
+            
+            delaware_info += "**Legal Framework:**\n"
+            delaware_info += "- ⚖️ [Delaware Marijuana Control Act](https://delcode.delaware.gov/title16/c047/)\n"
+            delaware_info += "- 🏥 [Office of Medical Marijuana](https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html)\n\n"
+            
+            delaware_info += "**Business Support:**\n"
+            delaware_info += "- 📞 **DCCC Helpline**: 1-800-292-7935\n"
+            delaware_info += "- 💼 [Delaware Economic Development](https://choosedelaware.com/)\n"
+            delaware_info += "- 🏢 [Delaware Chamber of Commerce](https://www.delawarechamber.com/)\n\n"
+            
+            delaware_info += "### ⚠️ Important Compliance Notes:\n\n"
+            delaware_info += "- **Location Restrictions**: Must be 500ft from schools, 1000ft from churches\n"
+            delaware_info += "- **Security Requirements**: 24/7 surveillance, alarm systems, secure storage\n"
+            delaware_info += "- **Record Keeping**: Maintain detailed records for 5 years\n"
+            delaware_info += "- **Employee Training**: All staff must complete compliance training\n"
+            delaware_info += "- **Annual Renewal**: License must be renewed annually\n"
+            delaware_info += "- **Penalties**: Non-compliance can result in fines and license revocation\n\n"
+            
+            delaware_info += "### 🎯 Next Steps for Your Cannabis Dispensary:\n\n"
+            delaware_info += "1. **Immediate Actions**:\n"
+            delaware_info += "   - Contact DCCC at 1-800-292-7935\n"
+            delaware_info += "   - Review the [Business Guide](https://cannabis.delaware.gov/business-guide/)\n"
+            delaware_info += "   - Start your business registration process\n\n"
+            
+            delaware_info += "2. **Within 30 Days**:\n"
+            delaware_info += "   - Secure a compliant location\n"
+            delaware_info += "   - Develop your business plan\n"
+            delaware_info += "   - Prepare financial documentation\n\n"
+            
+            delaware_info += "3. **Within 60 Days**:\n"
+            delaware_info += "   - Submit your application to DCCC\n"
+            delaware_info += "   - Begin staff training programs\n"
+            delaware_info += "   - Install security systems\n\n"
+            
+            delaware_info += "4. **Before Opening**:\n"
+            delaware_info += "   - Complete all compliance training\n"
+            delaware_info += "   - Pass final inspection\n"
+            delaware_info += "   - Receive final approval from DCCC\n\n"
+            
+            delaware_info += "**💡 Pro Tip**: Consider hiring a cannabis compliance consultant to ensure you meet all requirements.\n\n"
         
         # Add comprehensive Delaware resources based on business type
         if any(word in business_lower for word in ['food', 'restaurant', 'bakery', 'cafe', 'catering']):
@@ -225,7 +298,8 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
         delaware_info += "### 👥 Delaware Employment Resources:\n"
         delaware_info += "- **Department of Labor**: https://labor.delaware.gov/\n"
         delaware_info += "- **Workers Compensation**: https://labor.delaware.gov/workers-compensation/\n"
-        delaware_info += "- **Unemployment Insurance**: https://labor.delaware.gov/unemployment-insurance/\n\n"
+        delaware_info += "- **Unemployment Insurance**: https://labor.delaware.gov/unemployment-insurance/\n"
+        delaware_info += "- **Workplace Safety**: https://labor.delaware.gov/workplace-safety/\n\n"
         
         # Add local government resources
         delaware_info += "### 🏘️ Delaware Local Government Resources:\n"
@@ -237,14 +311,12 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
         delaware_info += "- **City of Newark**: https://www.newarkde.gov/\n\n"
         
         # Add business support resources
-        delaware_info += "### 🤝 Delaware Business Support:\n"
+        delaware_info += "### 🚀 Delaware Business Support Resources:\n"
         delaware_info += "- **Delaware Economic Development**: https://choosedelaware.com/\n"
         delaware_info += "- **Delaware Chamber of Commerce**: https://www.delawarechamber.com/\n"
         delaware_info += "- **Delaware SBA**: https://www.sba.gov/offices/district/de/wilmington\n"
-        delaware_info += "- **Delaware SCORE**: https://delaware.score.org/\n\n"
-        
-        delaware_info += "📞 **Need Help?**: Call Delaware Business First Steps at 1-800-292-7935\n"
-        delaware_info += "💡 **Tip**: Contact your local Small Business Administration (SBA) office for additional guidance.\n\n"
+        delaware_info += "- **Delaware SCORE**: https://delaware.score.org/\n"
+        delaware_info += "- **Delaware Small Business Development Center**: https://www.delawaresbdc.org/\n\n"
         
         return delaware_info
         
@@ -355,50 +427,73 @@ def get_fallback_response(business_description):
 
 
 def get_source_attribution(ai_used, delaware_rag_used, business_description):
-    """Generate source attribution based on what was used"""
+    """Generate source attribution information"""
     sources = []
+    location_info = ""
+    
+    # Check if this is a Delaware query
+    business_lower = business_description.lower()
+    is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
+    is_cannabis_query = any(word in business_lower for word in ['cannabis', 'marijuana', 'weed', 'dispensary', 'pot'])
     
     if ai_used:
-        if "gemini" in ai_used.lower():
-            sources.append("**AI Source**: Google Gemini 1.5 Flash")
-        elif "ollama" in ai_used.lower():
-            sources.append("**AI Source**: Local Ollama (llama3.1:8b)")
-        else:
-            sources.append("**AI Source**: AI-powered guidance")
+        sources.append(f"**AI Source**: {ai_used}")
     
     if delaware_rag_used:
         sources.append("**Delaware Data Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)")
         sources.append("**Vector Database**: Qdrant with semantic search")
         sources.append("**Delaware Government Resources**: [Division of Corporations](https://corp.delaware.gov/), [Department of State](https://sos.delaware.gov/), [Division of Revenue](https://revenue.delaware.gov/)")
+        
+        # Add cannabis-specific sources if applicable
+        if is_cannabis_query:
+            sources.append("**Cannabis Compliance**: [Delaware Cannabis Compliance Commission](https://cannabis.delaware.gov/)")
+            sources.append("**Cannabis Licensing**: [Cannabis Licensing Portal](https://cannabis.delaware.gov/licensing/)")
+            sources.append("**Cannabis Regulations**: [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)")
+            sources.append("**Cannabis Application**: [Application Portal](https://cannabis.delaware.gov/apply/)")
+            sources.append("**Cannabis Business Guide**: [Business Guide](https://cannabis.delaware.gov/business-guide/)")
+            sources.append("**Cannabis Compliance**: [Compliance Requirements](https://cannabis.delaware.gov/compliance/)")
+            sources.append("**Cannabis Security**: [Security Requirements](https://cannabis.delaware.gov/security/)")
+            sources.append("**Cannabis Testing**: [Testing Requirements](https://cannabis.delaware.gov/testing/)")
+            sources.append("**Legal Framework**: [Delaware Marijuana Control Act](https://delcode.delaware.gov/title16/c047/)")
+            sources.append("**Medical Marijuana**: [Office of Medical Marijuana](https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html)")
     
     # Detect location from business description
-    business_lower = business_description.lower()
-    location_info = ""
-    
-    if any(word in business_lower for word in ['delaware', 'de', 'first state']):
+    if is_delaware_query:
         location_info = "**Location**: Delaware"
         sources.append("**State Resources**: Delaware government websites")
         sources.append("**Delaware Specific Links**: [Business First Steps](https://firststeps.delaware.gov/), [Professional Licensing](https://sos.delaware.gov/professional-regulation/), [Tax Registration](https://revenue.delaware.gov/business-tax-registration/)")
+        
+        if is_cannabis_query:
+            sources.append("**Delaware Cannabis Resources**: [Cannabis Compliance Commission](https://cannabis.delaware.gov/), [Cannabis Licensing](https://cannabis.delaware.gov/licensing/), [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)")
+            sources.append("**Delaware Cannabis Support**: DCCC Helpline 1-800-292-7935")
+    
     elif any(word in business_lower for word in ['texas', 'tx']):
         location_info = "**Location**: Texas"
         sources.append("**State Resources**: Texas Secretary of State")
         sources.append("**Texas Specific Links**: [Texas Secretary of State](https://www.sos.state.tx.us/), [Texas Comptroller](https://comptroller.texas.gov/), [Texas Workforce Commission](https://www.twc.texas.gov/)")
-    elif any(word in business_lower for word in ['california', 'ca']):
+    
+    elif any(word in business_lower for word in ['california', 'ca', 'cali']):
         location_info = "**Location**: California"
         sources.append("**State Resources**: California Secretary of State")
         sources.append("**California Specific Links**: [CA Secretary of State](https://www.sos.ca.gov/), [CA Department of Tax](https://www.cdtfa.ca.gov/), [CA Employment Development](https://www.edd.ca.gov/)")
-    elif any(word in business_lower for word in ['new york', 'ny']):
+    
+    elif any(word in business_lower for word in ['new york', 'ny', 'nyc']):
         location_info = "**Location**: New York"
         sources.append("**State Resources**: New York Department of State")
-        sources.append("**New York Specific Links**: [NY Department of State](https://dos.ny.gov/), [NY Department of Tax](https://www.tax.ny.gov/), [NY Department of Labor](https://dol.ny.gov/)")
+        sources.append("**New York Specific Links**: [NY Department of State](https://www.dos.ny.gov/), [NY Department of Tax](https://www.tax.ny.gov/), [NY Department of Labor](https://www.labor.ny.gov/)")
+    
     elif any(word in business_lower for word in ['florida', 'fl']):
         location_info = "**Location**: Florida"
         sources.append("**State Resources**: Florida Department of State")
         sources.append("**Florida Specific Links**: [FL Department of State](https://dos.myflorida.com/), [FL Department of Revenue](https://floridarevenue.com/), [FL Department of Economic Opportunity](https://floridajobs.org/)")
+    
     else:
-        location_info = "**Location**: General guidance (verify with your state)"
-        sources.append("**General Resources**: SBA and local authorities")
-        sources.append("**Federal Resources**: [SBA](https://www.sba.gov/), [IRS](https://www.irs.gov/), [Department of Labor](https://www.dol.gov/)")
+        location_info = "**Location**: General (Multiple States)"
+        sources.append("**Federal Resources**: Small Business Administration (SBA)")
+        sources.append("**General Business Resources**: [SBA.gov](https://www.sba.gov/), [BusinessUSA](https://business.usa.gov/)")
+    
+    # Add federal resources
+    sources.append("**Federal Resources**: [Small Business Administration](https://www.sba.gov/), [IRS Business](https://www.irs.gov/businesses)")
     
     return location_info, sources
 
