@@ -1,9 +1,28 @@
 import requests
 import json
+import os
+import google.generativeai as genai
+
+
+def call_gemini(prompt, api_key):
+    """Call Gemini API with a prompt"""
+    try:
+        # Configure the Gemini API
+        genai.configure(api_key=api_key)
+        
+        # Use the Gemini Pro model
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Generate response
+        response = model.generate_content(prompt)
+        
+        return response.text
+    except Exception as e:
+        return f"ERROR: {str(e)}"
 
 
 def call_ollama(model, prompt):
-    """Simple function to call Ollama with a prompt"""
+    """Simple function to call Ollama with a prompt (kept for local development)"""
     url = "http://localhost:11434/api/generate"
     data = {
         "model": model,
@@ -24,7 +43,7 @@ def call_ollama(model, prompt):
 
 
 def get_fallback_response(business_description):
-    """Provide fallback guidance when Ollama is not available"""
+    """Provide fallback guidance when AI is not available"""
     
     # Simple keyword-based guidance
     business_lower = business_description.lower()
@@ -139,17 +158,23 @@ def run_agent(user_input):
     3. Steps they should take to obtain the necessary licenses
     4. Any additional considerations for their business type and location
     
-    Be helpful, specific, and provide actionable advice.
+    Be helpful, specific, and provide actionable advice. Format your response with clear headings and bullet points.
     """
     
-    # Try to call Ollama first
+    # Try Gemini API first
+    api_key = os.getenv('GEMINI_API_KEY')
+    if api_key:
+        response = call_gemini(prompt, api_key)
+        if not response.startswith("ERROR:"):
+            return response
+    
+    # Try Ollama as fallback
     response = call_ollama("llama3.1:8b", prompt)
+    if not response.startswith("ERROR:"):
+        return response
     
-    # If Ollama is not available, use fallback
-    if response.startswith("ERROR:"):
-        return get_fallback_response(user_input)
-    
-    return response
+    # Use fallback guidance if no AI is available
+    return get_fallback_response(user_input)
 
 
 if __name__ == "__main__":
