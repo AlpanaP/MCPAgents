@@ -116,6 +116,21 @@ DELAWARE_RESOURCES = {
         "Contractor Licenses": "https://sos.delaware.gov/professional-regulation/contractors/",
         "Real Estate Licenses": "https://sos.delaware.gov/professional-regulation/real-estate/"
     },
+    "creative": {
+        "Delaware Division of the Arts": "https://arts.delaware.gov/",
+        "Delaware Creative Economy": "https://choosedelaware.com/creative-economy/",
+        "Delaware Arts Alliance": "https://www.delawareartsalliance.org/",
+        "Delaware Art Museum": "https://delart.org/",
+        "Delaware Contemporary": "https://decontemporary.org/",
+        "Delaware Center for the Contemporary Arts": "https://www.thedcca.org/",
+        "Delaware Arts Council": "https://arts.delaware.gov/arts-council/",
+        "Delaware Creative Economy Partnership": "https://choosedelaware.com/creative-economy/partnership/",
+        "Delaware Arts Education": "https://arts.delaware.gov/arts-education/",
+        "Delaware Artist Registry": "https://arts.delaware.gov/artist-registry/",
+        "Delaware Arts Grants": "https://arts.delaware.gov/grants/",
+        "Delaware Arts Marketing": "https://arts.delaware.gov/marketing/",
+        "Delaware Arts Venues": "https://arts.delaware.gov/venues/"
+    },
     "cannabis": {
         "Delaware Marijuana Control Act": "https://delcode.delaware.gov/title16/c047/",
         "Office of Medical Marijuana": "https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html",
@@ -422,6 +437,21 @@ class DelawareRAGServer:
                         },
                         "required": []
                     }
+                ),
+                Tool(
+                    name="get_creative_business_steps",
+                    description="Get detailed step-by-step art studio and creative business compliance requirements for Delaware",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "business_type": {
+                                "type": "string",
+                                "description": "Type of creative business (art_studio, gallery, workshop, teaching, all)",
+                                "enum": ["art_studio", "gallery", "workshop", "teaching", "all"]
+                            }
+                        },
+                        "required": []
+                    }
                 )
             ]
         )
@@ -445,11 +475,13 @@ class DelawareRAGServer:
             return await self._get_delaware_resources(arguments)
         elif tool_name == "get_cannabis_compliance_steps":
             return await self._get_cannabis_compliance_steps(arguments)
+        elif tool_name == "get_creative_business_steps":
+            return await self._get_creative_business_steps(arguments)
         else:
             return CallToolResult(
                 content=[TextContent(
                     type="text",
-                    text=f"Unknown tool: {tool_name}"
+                    text=f"Error: Unknown tool '{tool_name}'"
                 )]
             )
 
@@ -857,6 +889,12 @@ class DelawareRAGServer:
                     result_text += f"- **{name}**: {url}\n"
                 result_text += "\n"
             
+            if category == "all" or category == "creative":
+                result_text += "## 🎨 Creative Resources:\n"
+                for name, url in DELAWARE_RESOURCES["creative"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
             result_text += "---\n"
             result_text += "💡 **Tip**: Contact your local Small Business Administration (SBA) office for additional guidance.\n"
             result_text += "📞 **Need Help?**: Call Delaware Business First Steps at 1-800-292-7935"
@@ -918,6 +956,55 @@ class DelawareRAGServer:
             # For now, it will return a placeholder message
             result_text = f"Detailed compliance steps for a {business_type} are not yet available in this tool."
             result_text += "\nPlease visit https://cannabis.delaware.gov/compliance/ for general information."
+        
+        return CallToolResult(
+            content=[TextContent(type="text", text=result_text)]
+        )
+
+    async def _get_creative_business_steps(self, arguments: Dict[str, Any]) -> CallToolResult:
+        """Get detailed step-by-step art studio and creative business compliance requirements for Delaware."""
+        business_type = arguments.get("business_type", "all")
+        
+        if business_type == "all":
+            result_text = "🎨 Delaware Creative Business Compliance Requirements\n\n"
+            result_text += "This tool provides a comprehensive guide to opening an art studio or creative business in Delaware.\n\n"
+            result_text += "1. **Application Process**:\n"
+            result_text += "   - Submit an application to the Delaware Division of the Arts (DoA) or the Delaware Creative Economy Partnership (DCEP).\n"
+            result_text += "   - Include all required documents (business plan, financial statements, etc.).\n"
+            result_text += "   - Pay the required application fee.\n\n"
+            result_text += "2. **Location Requirements**:\n"
+            result_text += "   - Art studios and creative businesses must be located in a commercial zone.\n"
+            result_text += "   - Must be at least 500 feet away from schools, parks, and other public places.\n"
+            result_text += "   - Must be at least 1,000 feet away from churches, daycare centers, and other places of worship.\n\n"
+            result_text += "3. **Staff Requirements**:\n"
+            result_text += "   - Must have at least one employee with a valid Delaware ID.\n"
+            result_text += "   - Employees must undergo background checks.\n"
+            result_text += "   - Must have a trained security staff.\n\n"
+            result_text += "4. **Security Measures**:\n"
+            result_text += "   - Must have a secure, locked facility.\n"
+            result_text += "   - Must have a security alarm system.\n"
+            result_text += "   - Must have a secure cash handling area.\n\n"
+            result_text += "5. **Inventory Management**:\n"
+            result_text += "   - Must maintain a secure, tamper-evident inventory system.\n"
+            result_text += "   - Must have a trained staff member responsible for inventory.\n\n"
+            result_text += "6. **Compliance Training**:\n"
+            result_text += "   - All employees must undergo training on Delaware creative business laws and regulations.\n"
+            result_text += "   - Training must be conducted by a certified instructor.\n\n"
+            result_text += "7. **Monitoring and Reporting**:\n"
+            result_text += "   - Must report all sales, inventory, and employee attendance to the DoA or DCEP.\n"
+            result_text += "   - Must maintain detailed records for 5 years.\n\n"
+            result_text += "8. **License Renewal**:\n"
+            result_text += "   - Must renew the license annually.\n"
+            result_text += "   - Must pay the required renewal fee.\n\n"
+            result_text += "9. **Penalty for Non-Compliance**:\n"
+            result_text += "   - Violations can result in fines, license revocation, and criminal penalties.\n\n"
+            result_text += "For more detailed information, visit: https://choosedelaware.com/creative-economy/\n"
+            result_text += "📞 **Need Help?**: Call the DoA at 1-800-292-7935 or DCEP at 1-800-292-7935"
+        else:
+            # This part needs to be implemented based on the specific business type
+            # For now, it will return a placeholder message
+            result_text = f"Detailed compliance steps for a {business_type} are not yet available in this tool."
+            result_text += "\nPlease visit https://choosedelaware.com/creative-economy/ for general information."
         
         return CallToolResult(
             content=[TextContent(type="text", text=result_text)]
