@@ -30,7 +30,7 @@ BusinessLicenseNavigator/
 │       ├── delaware/             # Delaware-specific RAG
 │       ├── florida/              # Florida-specific RAG
 │       └── generic/              # Generic RAG for any state
-├── mcp/                          # MCP (Model Context Protocol)
+├── mcp_server/                   # MCP (Model Context Protocol) Servers
 │   └── servers/                  # MCP server implementations
 │       ├── delaware/             # Delaware-specific MCP
 │       ├── florida/              # Florida-specific MCP
@@ -126,7 +126,7 @@ class ServerFactory:
   "servers": {
     "delaware_license_server": {
       "name": "Delaware License Server",
-      "module": "rag.servers.delaware.delaware_mcp_server",
+      "module": "mcp_server.servers.delaware.delaware_mcp_server",
       "class": "DelawareLicenseServer",
       "config": {
         "server_name": "Delaware License Server",

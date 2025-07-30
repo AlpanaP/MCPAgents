@@ -3,7 +3,7 @@
     "delaware_license_server": {
       "name": "Delaware License Server",
       "description": "MCP server for Delaware business license information",
-      "module": "mcp.servers.delaware.delaware_mcp_server",
+      "module": "mcp_server.servers.delaware.delaware_mcp_server",
       "class": "DelawareLicenseServer",
       "config": {
         "server_name": "Delaware License Server",
@@ -61,7 +61,7 @@
     "florida_license_server": {
       "name": "Florida License Server",
       "description": "MCP server for Florida business license information",
-      "module": "mcp.servers.florida.florida_mcp_server",
+      "module": "mcp_server.servers.florida.florida_mcp_server",
       "class": "FloridaLicenseServer",
       "config": {
         "server_name": "Florida License Server",
@@ -123,7 +123,7 @@
     "generic_license_server": {
       "name": "Generic License Server",
       "description": "Generic MCP server for any state/province business license information",
-      "module": "mcp.servers.generic.generic_mcp_server",
+      "module": "mcp_server.servers.generic.generic_mcp_server",
       "class": "GenericLicenseServer",
       "config": {
         "server_name": "Generic License Server",

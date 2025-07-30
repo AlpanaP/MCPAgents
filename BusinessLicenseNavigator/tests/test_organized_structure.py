@@ -198,6 +198,10 @@ def test_package_structure():
         from rag.servers.delaware import DelawareRAGServer
         logger.success("Delaware RAG server imported successfully")
         
+        # Test new MCP server package
+        from mcp_server.servers.delaware import DelawareLicenseServer
+        logger.success("Delaware MCP server imported successfully")
+        
         # Test that the old structure still works for backward compatibility
         try:
             from delaware_rag.delaware_rag_server import DelawareRAGServer as OldDelawareRAGServer
