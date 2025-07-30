@@ -1,0 +1,49 @@
+{
+  "sources": {
+    "delaware": {
+      "name": "Delaware Business First Steps",
+      "url": "https://firststeps.delaware.gov/topics/",
+      "description": "Official Delaware government website for business licenses and registrations",
+      "categories": [
+        "Agriculture",
+        "Alcohol",
+        "Automobile",
+        "Banking",
+        "Boating",
+        "Child Care",
+        "Consumer Protection",
+        "Contractors/Building/Construction/Home Owner Improvements",
+        "Corporations",
+        "Courts",
+        "Educational Institutions",
+        "Employers",
+        "Environmental Protection",
+        "Equine",
+        "Food",
+        "General Business License",
+        "Health",
+        "Lottery/Gaming",
+        "Manufacturing",
+        "Professions",
+        "Protecting the Public",
+        "Roads and Access",
+        "Special Event/Sporting Event"
+      ],
+      "mcp_tools": [
+        "get_delaware_license_categories",
+        "get_delaware_license_details",
+        "search_delaware_licenses",
+        "get_delaware_business_steps"
+      ]
+    }
+  },
+  "mcp_servers": {
+    "delaware_licenses": {
+      "command": "python",
+      "args": ["delaware_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+} 

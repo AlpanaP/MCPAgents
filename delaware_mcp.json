@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "delaware_licenses": {
+      "command": "python",
+      "args": ["delaware_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+} 
