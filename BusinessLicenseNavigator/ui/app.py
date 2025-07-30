@@ -6,7 +6,14 @@ import os
 # Add the parent directory to the path so we can import agent
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agent import run_agent
+try:
+    from agent import run_agent
+except ImportError as e:
+    st.error(f"Import error: {e}")
+    st.info("Please ensure all dependencies are installed")
+    
+    def run_agent(user_input):
+        return "Error: Dependencies not available. Please check the requirements.txt file."
 
 st.title("Business License Navigator")
 
@@ -22,4 +29,4 @@ if st.button("Find My License Path"):
             st.write(response)
         except Exception as e:
             st.error(f"Error: {str(e)}")
-            st.info("Make sure Ollama is running locally with llama3.1:8b model")
+            st.info("Please check the deployment configuration")
