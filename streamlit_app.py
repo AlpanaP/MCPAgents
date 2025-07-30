@@ -90,6 +90,34 @@ with st.expander("🏛️ Delaware RAG Status"):
         - Relevance scoring for better results
         """)
 
+# Source Attribution Info
+with st.expander("📍 Response Sources"):
+    st.markdown("""
+    **How Response Sources Work:**
+    
+    The app automatically detects your location and uses appropriate sources:
+    
+    **📍 Location Detection:**
+    - Mentions of states (Delaware, Texas, California, etc.)
+    - State abbreviations (DE, TX, CA, etc.)
+    - City names with state context
+    
+    **🤖 AI Sources:**
+    - **Gemini**: Google's AI for cloud deployment
+    - **Ollama**: Local AI for privacy-focused users
+    - **Fallback**: Rule-based guidance when AI unavailable
+    
+    **🏛️ State-Specific Sources:**
+    - **Delaware**: Official Delaware Business First Steps + RAG
+    - **Other States**: General guidance + state-specific links
+    - **General**: SBA and local authority resources
+    
+    **📊 Data Quality:**
+    - AI responses are marked with source attribution
+    - Delaware queries get official government data
+    - All responses include relevant state/local links
+    """)
+
 # Gemini API Key configuration
 with st.expander("🔑 Gemini API Key Setup"):
     st.markdown("""
@@ -117,6 +145,17 @@ if DELAWARE_RAG_AVAILABLE:
     st.sidebar.success("✅ Delaware RAG Available")
 else:
     st.sidebar.warning("⚠️ Delaware RAG not available")
+
+# Location detection info
+st.sidebar.markdown("### 📍 Location Detection")
+st.sidebar.info("""
+The app automatically detects your location from your query and provides appropriate state/local resources.
+
+**Examples:**
+- "bakery in Delaware" → DE resources
+- "consulting in Texas" → TX resources  
+- "restaurant in CA" → CA resources
+""")
 
 user_input = st.text_area(
     "Business Description", 
@@ -153,6 +192,7 @@ st.markdown("""
 1. Describe your business type and location
 2. Click "Find My License Path"
 3. Get personalized guidance on licenses and permits
+4. Review the source attribution for transparency
 
 ### 🔧 Setup Options:
 

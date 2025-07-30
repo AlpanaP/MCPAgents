@@ -229,6 +229,48 @@ def get_fallback_response(business_description):
     return guidance
 
 
+def get_source_attribution(ai_used, delaware_rag_used, business_description):
+    """Generate source attribution based on what was used"""
+    sources = []
+    
+    if ai_used:
+        if "gemini" in ai_used.lower():
+            sources.append("**AI Source**: Google Gemini 1.5 Flash")
+        elif "ollama" in ai_used.lower():
+            sources.append("**AI Source**: Local Ollama (llama3.1:8b)")
+        else:
+            sources.append("**AI Source**: AI-powered guidance")
+    
+    if delaware_rag_used:
+        sources.append("**Delaware Data Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)")
+        sources.append("**Vector Database**: Qdrant with semantic search")
+    
+    # Detect location from business description
+    business_lower = business_description.lower()
+    location_info = ""
+    
+    if any(word in business_lower for word in ['delaware', 'de', 'first state']):
+        location_info = "**Location**: Delaware"
+        sources.append("**State Resources**: Delaware government websites")
+    elif any(word in business_lower for word in ['texas', 'tx']):
+        location_info = "**Location**: Texas"
+        sources.append("**State Resources**: Texas Secretary of State")
+    elif any(word in business_lower for word in ['california', 'ca']):
+        location_info = "**Location**: California"
+        sources.append("**State Resources**: California Secretary of State")
+    elif any(word in business_lower for word in ['new york', 'ny']):
+        location_info = "**Location**: New York"
+        sources.append("**State Resources**: New York Department of State")
+    elif any(word in business_lower for word in ['florida', 'fl']):
+        location_info = "**Location**: Florida"
+        sources.append("**State Resources**: Florida Department of State")
+    else:
+        location_info = "**Location**: General guidance (verify with your state)"
+        sources.append("**General Resources**: SBA and local authorities")
+    
+    return location_info, sources
+
+
 async def run_agent_async(user_input):
     """Run the business license navigator agent with Delaware RAG integration"""
     
@@ -254,10 +296,13 @@ async def run_agent_async(user_input):
     # Try Gemini API first
     api_key = os.getenv('GEMINI_API_KEY')
     ai_response = None
+    ai_source = None
     
     if api_key:
         ai_response = call_gemini(prompt, api_key)
-        if ai_response.startswith("ERROR:"):
+        if not ai_response.startswith("ERROR:"):
+            ai_source = "Gemini"
+        else:
             ai_response = None
     
     # Try Ollama as fallback if Gemini failed
@@ -265,19 +310,34 @@ async def run_agent_async(user_input):
         ollama_response = call_ollama("llama3.1:8b", prompt)
         if not ollama_response.startswith("ERROR:"):
             ai_response = ollama_response
+            ai_source = "Ollama"
+    
+    # Get Delaware-specific information
+    delaware_info = None
+    if is_delaware_query or DELAWARE_RAG_AVAILABLE:
+        delaware_info = await get_delaware_license_info(user_input)
+    
+    # Generate source attribution
+    location_info, sources = get_source_attribution(ai_source, delaware_info is not None, user_input)
     
     # Combine AI response with Delaware-specific information
     final_response = ""
+    
+    # Add source attribution at the top
+    final_response += "## 📍 Response Sources\n\n"
+    final_response += f"{location_info}\n\n"
+    final_response += "**Information Sources:**\n"
+    for source in sources:
+        final_response += f"- {source}\n"
+    final_response += "\n---\n\n"
     
     if ai_response:
         final_response += "## 🤖 AI-Powered Business License Guidance\n\n"
         final_response += ai_response + "\n\n"
     
     # Add Delaware-specific information if available and relevant
-    if is_delaware_query or DELAWARE_RAG_AVAILABLE:
-        delaware_info = await get_delaware_license_info(user_input)
-        if delaware_info:
-            final_response += delaware_info
+    if delaware_info:
+        final_response += delaware_info
     
     # If no AI response, use fallback
     if not ai_response:
