@@ -45,6 +45,50 @@ QDRANT_PORT = 6333
 COLLECTION_NAME = "delaware_licenses"
 VECTOR_SIZE = 384  # all-MiniLM-L6-v2 embedding size
 
+# Delaware Government Resources
+DELAWARE_RESOURCES = {
+    "main": {
+        "Business First Steps": "https://firststeps.delaware.gov/",
+        "Division of Corporations": "https://corp.delaware.gov/",
+        "Department of State": "https://sos.delaware.gov/",
+        "Small Business Development Center": "https://www.delawaresbdc.org/"
+    },
+    "licenses": {
+        "Professional Licensing": "https://sos.delaware.gov/professional-regulation/",
+        "Business Licenses": "https://firststeps.delaware.gov/topics/",
+        "Food Service Licenses": "https://dhss.delaware.gov/dhss/dph/hsp/restaurant.html",
+        "Health Care Licenses": "https://sos.delaware.gov/professional-regulation/health-occupations/",
+        "Contractor Licenses": "https://sos.delaware.gov/professional-regulation/contractors/",
+        "Real Estate Licenses": "https://sos.delaware.gov/professional-regulation/real-estate/"
+    },
+    "taxes": {
+        "Division of Revenue": "https://revenue.delaware.gov/",
+        "Business Tax Registration": "https://revenue.delaware.gov/business-tax-registration/",
+        "Sales Tax": "https://revenue.delaware.gov/sales-tax/",
+        "Corporate Income Tax": "https://revenue.delaware.gov/corporate-income-tax/"
+    },
+    "employment": {
+        "Department of Labor": "https://labor.delaware.gov/",
+        "Workers Compensation": "https://labor.delaware.gov/workers-compensation/",
+        "Unemployment Insurance": "https://labor.delaware.gov/unemployment-insurance/",
+        "Workplace Safety": "https://labor.delaware.gov/workplace-safety/"
+    },
+    "local": {
+        "New Castle County": "https://www.nccde.org/",
+        "Kent County": "https://www.co.kent.de.us/",
+        "Sussex County": "https://www.sussexcountyde.gov/",
+        "City of Wilmington": "https://www.wilmingtonde.gov/",
+        "City of Dover": "https://www.cityofdover.com/",
+        "City of Newark": "https://www.newarkde.gov/"
+    },
+    "support": {
+        "Delaware Economic Development": "https://choosedelaware.com/",
+        "Delaware Chamber of Commerce": "https://www.delawarechamber.com/",
+        "Delaware SBA": "https://www.sba.gov/offices/district/de/wilmington",
+        "Delaware SCORE": "https://delaware.score.org/"
+    }
+}
+
 class DelawareRAGServer:
     def __init__(self):
         self.server = Server("delaware-licenses-rag")
@@ -123,32 +167,28 @@ class DelawareRAGServer:
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Extract license data
             license_entries = []
             
-            # Find all category sections
-            for element in soup.find_all(['h2', 'h3', 'h4']):
-                category = element.get_text(strip=True)
-                if len(category) > 2 and len(category) < 100:
-                    # Get license types in this category
-                    parent = element.find_parent()
-                    if parent:
-                        license_types = []
-                        for item in parent.find_all(['li', 'a']):
-                            license_text = item.get_text(strip=True)
-                            if license_text and len(license_text) > 3:
-                                license_types.append(license_text)
-                        
-                        # Create entries for each license type
-                        for license_type in license_types:
-                            entry = {
-                                "category": category,
-                                "license_type": license_type,
-                                "text": f"Category: {category}. License Type: {license_type}",
-                                "source": DELAWARE_TOPICS_URL
-                            }
-                            license_entries.append(entry)
+            # Extract license information from the page
+            for section in soup.find_all(['h2', 'h3', 'h4', 'h5']):
+                title = section.get_text(strip=True)
+                if title and any(keyword in title.lower() for keyword in ['license', 'permit', 'registration', 'certification']):
+                    # Get the content following this section
+                    content = ""
+                    next_elem = section.find_next_sibling()
+                    while next_elem and next_elem.name not in ['h2', 'h3', 'h4', 'h5']:
+                        if next_elem.name:
+                            content += next_elem.get_text(strip=True) + " "
+                        next_elem = next_elem.find_next_sibling()
+                    
+                    if content.strip():
+                        entry = {
+                            "text": f"{title}: {content.strip()}",
+                            "category": "Business Licenses",
+                            "license_type": title,
+                            "source": DELAWARE_TOPICS_URL
+                        }
+                        license_entries.append(entry)
             
             # Add to Qdrant collection
             if license_entries and self.qdrant_client:
@@ -187,140 +227,154 @@ class DelawareRAGServer:
 
     async def list_tools(self, request: ListToolsRequest) -> ListToolsResult:
         """List available tools for Delaware license information with RAG."""
-        tools = [
-            Tool(
-                name="get_delaware_license_categories",
-                description="Get all available license categories from Delaware Business First Steps",
-                inputSchema={
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }
-            ),
-            Tool(
-                name="get_delaware_license_details",
-                description="Get detailed information about a specific license type from Delaware",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "category": {
-                            "type": "string",
-                            "description": "License category (e.g., 'Food', 'Health', 'Professions')"
+        return ListToolsResult(
+            tools=[
+                Tool(
+                    name="get_delaware_license_categories",
+                    description="Get all available Delaware license categories",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                ),
+                Tool(
+                    name="get_delaware_license_details",
+                    description="Get detailed information about a specific Delaware license type",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "license_type": {
+                                "type": "string",
+                                "description": "The specific license type to get details for"
+                            }
                         },
-                        "license_type": {
-                            "type": "string",
-                            "description": "Specific license type within the category"
-                        }
-                    },
-                    "required": ["category"]
-                }
-            ),
-            Tool(
-                name="search_delaware_licenses_rag",
-                description="Search for licenses using semantic search (RAG-powered with Qdrant)",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Search query (e.g., 'restaurant', 'bakery', 'consulting')"
+                        "required": ["license_type"]
+                    }
+                ),
+                Tool(
+                    name="search_delaware_licenses_rag",
+                    description="Search for licenses using semantic search (RAG-powered with Qdrant)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "Search query (e.g., 'restaurant', 'bakery', 'consulting')"
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "description": "Number of results to return (default: 5)",
+                                "default": 5
+                            }
                         },
-                        "top_k": {
-                            "type": "integer",
-                            "description": "Number of top results to return (default: 5)"
-                        }
-                    },
-                    "required": ["query"]
-                }
-            ),
-            Tool(
-                name="get_delaware_business_steps",
-                description="Get the 4-step process for opening a business in Delaware",
-                inputSchema={
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }
-            ),
-            Tool(
-                name="get_similar_licenses",
-                description="Find similar licenses based on a license type (RAG-powered with Qdrant)",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "license_type": {
-                            "type": "string",
-                            "description": "License type to find similar ones for"
+                        "required": ["query"]
+                    }
+                ),
+                Tool(
+                    name="get_similar_licenses",
+                    description="Find similar licenses based on a license type (RAG-powered with Qdrant)",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "license_type": {
+                                "type": "string",
+                                "description": "License type to find similar ones for"
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "description": "Number of similar results to return (default: 3)",
+                                "default": 3
+                            }
                         },
-                        "top_k": {
-                            "type": "integer",
-                            "description": "Number of similar results to return (default: 3)"
-                        }
-                    },
-                    "required": ["license_type"]
-                }
-            )
-        ]
-        return ListToolsResult(tools=tools)
+                        "required": ["license_type"]
+                    }
+                ),
+                Tool(
+                    name="get_delaware_business_steps",
+                    description="Get the 4-step process for opening a business in Delaware",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                ),
+                Tool(
+                    name="get_delaware_resources",
+                    description="Get comprehensive Delaware government resources and links",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "category": {
+                                "type": "string",
+                                "description": "Resource category (main, licenses, taxes, employment, local, support, all)",
+                                "enum": ["main", "licenses", "taxes", "employment", "local", "support", "all"]
+                            }
+                        },
+                        "required": []
+                    }
+                )
+            ]
+        )
 
     async def call_tool(self, request: CallToolRequest) -> CallToolResult:
         """Handle tool calls for Delaware license information with RAG."""
-        try:
-            if request.name == "get_delaware_license_categories":
-                return await self._get_license_categories()
-            elif request.name == "get_delaware_license_details":
-                return await self._get_license_details(request.arguments)
-            elif request.name == "search_delaware_licenses_rag":
-                return await self._search_licenses_rag(request.arguments)
-            elif request.name == "get_delaware_business_steps":
-                return await self._get_business_steps()
-            elif request.name == "get_similar_licenses":
-                return await self._get_similar_licenses(request.arguments)
-            else:
-                raise ValueError(f"Unknown tool: {request.name}")
-        except Exception as e:
-            logger.error(f"Error in tool call {request.name}: {e}")
+        tool_name = request.name
+        arguments = request.arguments
+        
+        if tool_name == "get_delaware_license_categories":
+            return await self._get_license_categories()
+        elif tool_name == "get_delaware_license_details":
+            return await self._get_license_details(arguments)
+        elif tool_name == "search_delaware_licenses_rag":
+            return await self._search_licenses_rag(arguments)
+        elif tool_name == "get_similar_licenses":
+            return await self._get_similar_licenses(arguments)
+        elif tool_name == "get_delaware_business_steps":
+            return await self._get_business_steps()
+        elif tool_name == "get_delaware_resources":
+            return await self._get_delaware_resources(arguments)
+        else:
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: {str(e)}")]
+                content=[TextContent(
+                    type="text",
+                    text=f"Unknown tool: {tool_name}"
+                )]
             )
 
     async def _get_license_categories(self) -> CallToolResult:
-        """Get all available license categories from Delaware."""
+        """Get all available Delaware license categories."""
         try:
             response = self.session.get(DELAWARE_TOPICS_URL)
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Find the main content area
-            content = soup.find('div', {'id': 'content'}) or soup
-            
-            # Extract categories from the page
             categories = []
             
-            # Look for category headings
-            category_elements = content.find_all(['h2', 'h3', 'h4'])
+            # Extract license categories from the page
+            for section in soup.find_all(['h2', 'h3', 'h4']):
+                title = section.get_text(strip=True)
+                if title and any(keyword in title.lower() for keyword in ['license', 'permit', 'registration', 'certification']):
+                    categories.append(title)
             
-            for element in category_elements:
-                text = element.get_text(strip=True)
-                if text and len(text) > 2 and len(text) < 100:
-                    categories.append(text)
+            result_text = "Delaware License Categories\n\n"
+            result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
+            result_text += "Available Categories:\n"
             
-            # Remove duplicates and clean up
-            categories = list(set([cat.strip() for cat in categories if cat.strip()]))
+            if categories:
+                for i, category in enumerate(categories, 1):
+                    result_text += f"{i}. {category}\n"
+            else:
+                result_text += "No specific categories found. Check the Delaware Business First Steps website for current categories.\n"
             
-            result_text = f"Delaware Business License Categories:\n\n"
-            result_text += f"Source: {DELAWARE_TOPICS_URL}\n"
-            result_text += f"Total Categories: {len(categories)}\n\n"
-            result_text += f"Available Categories:\n"
-            result_text += "\n".join([f"• {cat}" for cat in categories])
+            result_text += f"\nFor detailed information on each category, visit: {DELAWARE_TOPICS_URL}"
             
             return CallToolResult(
                 content=[TextContent(type="text", text=result_text)]
             )
             
         except Exception as e:
-            logger.error(f"Error fetching categories: {e}")
+            logger.error(f"Error fetching license categories: {e}")
             return CallToolResult(
                 content=[TextContent(
                     type="text",
@@ -330,51 +384,71 @@ class DelawareRAGServer:
 
     async def _get_license_details(self, arguments: Dict[str, Any]) -> CallToolResult:
         """Get detailed information about a specific license type."""
-        category = arguments.get("category", "").strip()
-        license_type = arguments.get("license_type", "").strip()
+        license_type = arguments.get("license_type", "")
+        
+        if not license_type:
+            return CallToolResult(
+                content=[TextContent(
+                    type="text",
+                    text="Please provide a license type."
+                )]
+            )
         
         try:
+            # Search for the specific license type
+            if self.qdrant_client and self.embedding_model:
+                # Use RAG to find the license
+                license_embedding = self.embedding_model.encode([license_type])
+                
+                search_results = self.qdrant_client.search(
+                    collection_name=COLLECTION_NAME,
+                    query_vector=license_embedding[0].tolist(),
+                    limit=1
+                )
+                
+                if search_results:
+                    result = search_results[0]
+                    payload = result.payload
+                    
+                    result_text = f"Delaware License Details: {payload['license_type']}\n\n"
+                    result_text += f"Source: {payload['source']}\n\n"
+                    result_text += f"Category: {payload['category']}\n"
+                    result_text += f"Description: {payload['text']}\n\n"
+                    result_text += f"Relevance Score: {result.score:.3f}\n\n"
+                    result_text += f"For more detailed information, visit: {DELAWARE_TOPICS_URL}"
+                    
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=result_text)]
+                    )
+            
+            # Fallback to web scraping
             response = self.session.get(DELAWARE_TOPICS_URL)
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Find the section for the specified category
-            category_section = None
-            for element in soup.find_all(['h2', 'h3', 'h4']):
-                if element.get_text(strip=True).lower() == category.lower():
-                    category_section = element.find_parent()
-                    break
+            # Search for the license type
+            for section in soup.find_all(['h2', 'h3', 'h4']):
+                title = section.get_text(strip=True)
+                if license_type.lower() in title.lower():
+                    content = ""
+                    next_elem = section.find_next_sibling()
+                    while next_elem and next_elem.name not in ['h2', 'h3', 'h4']:
+                        if next_elem.name:
+                            content += next_elem.get_text(strip=True) + " "
+                        next_elem = next_elem.find_next_sibling()
+                    
+                    result_text = f"Delaware License Details: {title}\n\n"
+                    result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
+                    result_text += f"Description: {content.strip()}\n\n"
+                    result_text += f"For more detailed information, visit: {DELAWARE_TOPICS_URL}"
+                    
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=result_text)]
+                    )
             
-            if not category_section:
-                return CallToolResult(
-                    content=[TextContent(
-                        type="text",
-                        text=f"Category '{category}' not found. Available categories can be retrieved using get_delaware_license_categories."
-                    )]
-                )
-            
-            # Extract license types within the category
-            license_types = []
-            for item in category_section.find_all(['li', 'a']):
-                text = item.get_text(strip=True)
-                if text and len(text) > 3 and len(text) < 200:
-                    license_types.append(text)
-            
-            result_text = f"Delaware License Details for Category: {category}\n\n"
-            result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
-            
-            if license_types:
-                result_text += f"License Types in {category}:\n"
-                for i, license_type in enumerate(license_types[:20], 1):  # Limit to first 20
-                    result_text += f"{i}. {license_type}\n"
-                
-                if len(license_types) > 20:
-                    result_text += f"\n... and {len(license_types) - 20} more license types.\n"
-            else:
-                result_text += "No specific license types found for this category.\n"
-            
-            result_text += f"\nFor more detailed information, visit: {DELAWARE_TOPICS_URL}"
+            result_text = f"No detailed information found for '{license_type}'.\n\n"
+            result_text += f"Please visit {DELAWARE_TOPICS_URL} to search for this license type."
             
             return CallToolResult(
                 content=[TextContent(type="text", text=result_text)]
@@ -391,7 +465,7 @@ class DelawareRAGServer:
 
     async def _search_licenses_rag(self, arguments: Dict[str, Any]) -> CallToolResult:
         """Search for licenses using semantic search (RAG-powered with Qdrant)."""
-        query = arguments.get("query", "").strip()
+        query = arguments.get("query", "")
         top_k = arguments.get("top_k", 5)
         
         if not query:
@@ -504,14 +578,14 @@ class DelawareRAGServer:
 
     async def _get_similar_licenses(self, arguments: Dict[str, Any]) -> CallToolResult:
         """Find similar licenses based on a license type (RAG-powered with Qdrant)."""
-        license_type = arguments.get("license_type", "").strip()
+        license_type = arguments.get("license_type", "")
         top_k = arguments.get("top_k", 3)
         
         if not license_type:
             return CallToolResult(
                 content=[TextContent(
                     type="text",
-                    text="Please provide a license type to find similar ones for."
+                    text="Please provide a license type."
                 )]
             )
         
@@ -619,6 +693,67 @@ class DelawareRAGServer:
                 content=[TextContent(
                     type="text",
                     text=f"Error fetching Delaware business steps: {str(e)}"
+                )]
+            )
+
+    async def _get_delaware_resources(self, arguments: Dict[str, Any]) -> CallToolResult:
+        """Get comprehensive Delaware government resources and links."""
+        category = arguments.get("category", "all")
+        
+        try:
+            result_text = "🏛️ Delaware Government Resources\n\n"
+            result_text += f"Source: Delaware Government Websites\n\n"
+            
+            if category == "all" or category == "main":
+                result_text += "## 🏢 Main Delaware Resources:\n"
+                for name, url in DELAWARE_RESOURCES["main"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            if category == "all" or category == "licenses":
+                result_text += "## 📋 License & Permit Resources:\n"
+                for name, url in DELAWARE_RESOURCES["licenses"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            if category == "all" or category == "taxes":
+                result_text += "## 💰 Tax Resources:\n"
+                for name, url in DELAWARE_RESOURCES["taxes"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            if category == "all" or category == "employment":
+                result_text += "## 👥 Employment Resources:\n"
+                for name, url in DELAWARE_RESOURCES["employment"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            if category == "all" or category == "local":
+                result_text += "## 🏘️ Local Government Resources:\n"
+                for name, url in DELAWARE_RESOURCES["local"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            if category == "all" or category == "support":
+                result_text += "## 🤝 Business Support Resources:\n"
+                for name, url in DELAWARE_RESOURCES["support"].items():
+                    result_text += f"- **{name}**: {url}\n"
+                result_text += "\n"
+            
+            result_text += "---\n"
+            result_text += "💡 **Tip**: Contact your local Small Business Administration (SBA) office for additional guidance.\n"
+            result_text += "📞 **Need Help?**: Call Delaware Business First Steps at 1-800-292-7935"
+            
+            return CallToolResult(
+                content=[TextContent(type="text", text=result_text)]
+            )
+            
+        except Exception as e:
+            logger.error(f"Error fetching Delaware resources: {e}")
+            return CallToolResult(
+                content=[TextContent(
+                    type="text",
+                    text=f"Error fetching Delaware resources: {str(e)}"
                 )]
             )
 

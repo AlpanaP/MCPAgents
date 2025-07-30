@@ -121,6 +121,62 @@ async def get_delaware_license_info(business_description):
         delaware_info += "- **Delaware Small Business Development Center**: https://www.delawaresbdc.org/\n"
         delaware_info += "- **Delaware Department of State**: https://sos.delaware.gov/\n\n"
         
+        # Add comprehensive Delaware resources based on business type
+        if any(word in business_lower for word in ['food', 'restaurant', 'bakery', 'cafe', 'catering']):
+            delaware_info += "### 🍽️ Food Business Specific Resources:\n"
+            delaware_info += "- **Food Service Licenses**: https://dhss.delaware.gov/dhss/dph/hsp/restaurant.html\n"
+            delaware_info += "- **Health & Social Services**: https://dhss.delaware.gov/\n"
+            delaware_info += "- **Food Safety**: https://dhss.delaware.gov/dhss/dph/hsp/food.html\n\n"
+        
+        elif any(word in business_lower for word in ['health', 'medical', 'doctor', 'nurse', 'pharmacy']):
+            delaware_info += "### 🏥 Health Care Specific Resources:\n"
+            delaware_info += "- **Health Care Licenses**: https://sos.delaware.gov/professional-regulation/health-occupations/\n"
+            delaware_info += "- **Health & Social Services**: https://dhss.delaware.gov/\n"
+            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n\n"
+        
+        elif any(word in business_lower for word in ['construction', 'contractor', 'building']):
+            delaware_info += "### 🏗️ Construction Specific Resources:\n"
+            delaware_info += "- **Contractor Licenses**: https://sos.delaware.gov/professional-regulation/contractors/\n"
+            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n"
+            delaware_info += "- **Workplace Safety**: https://labor.delaware.gov/workplace-safety/\n\n"
+        
+        elif any(word in business_lower for word in ['real estate', 'realtor', 'property']):
+            delaware_info += "### 🏠 Real Estate Specific Resources:\n"
+            delaware_info += "- **Real Estate Licenses**: https://sos.delaware.gov/professional-regulation/real-estate/\n"
+            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n\n"
+        
+        # Add tax resources
+        delaware_info += "### 💰 Delaware Tax Resources:\n"
+        delaware_info += "- **Division of Revenue**: https://revenue.delaware.gov/\n"
+        delaware_info += "- **Business Tax Registration**: https://revenue.delaware.gov/business-tax-registration/\n"
+        delaware_info += "- **Sales Tax**: https://revenue.delaware.gov/sales-tax/\n"
+        delaware_info += "- **Corporate Income Tax**: https://revenue.delaware.gov/corporate-income-tax/\n\n"
+        
+        # Add employment resources
+        delaware_info += "### 👥 Delaware Employment Resources:\n"
+        delaware_info += "- **Department of Labor**: https://labor.delaware.gov/\n"
+        delaware_info += "- **Workers Compensation**: https://labor.delaware.gov/workers-compensation/\n"
+        delaware_info += "- **Unemployment Insurance**: https://labor.delaware.gov/unemployment-insurance/\n\n"
+        
+        # Add local government resources
+        delaware_info += "### 🏘️ Delaware Local Government Resources:\n"
+        delaware_info += "- **New Castle County**: https://www.nccde.org/\n"
+        delaware_info += "- **Kent County**: https://www.co.kent.de.us/\n"
+        delaware_info += "- **Sussex County**: https://www.sussexcountyde.gov/\n"
+        delaware_info += "- **City of Wilmington**: https://www.wilmingtonde.gov/\n"
+        delaware_info += "- **City of Dover**: https://www.cityofdover.com/\n"
+        delaware_info += "- **City of Newark**: https://www.newarkde.gov/\n\n"
+        
+        # Add business support resources
+        delaware_info += "### 🤝 Delaware Business Support:\n"
+        delaware_info += "- **Delaware Economic Development**: https://choosedelaware.com/\n"
+        delaware_info += "- **Delaware Chamber of Commerce**: https://www.delawarechamber.com/\n"
+        delaware_info += "- **Delaware SBA**: https://www.sba.gov/offices/district/de/wilmington\n"
+        delaware_info += "- **Delaware SCORE**: https://delaware.score.org/\n\n"
+        
+        delaware_info += "📞 **Need Help?**: Call Delaware Business First Steps at 1-800-292-7935\n"
+        delaware_info += "💡 **Tip**: Contact your local Small Business Administration (SBA) office for additional guidance.\n\n"
+        
         return delaware_info
         
     except Exception as e:
@@ -244,6 +300,7 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
     if delaware_rag_used:
         sources.append("**Delaware Data Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)")
         sources.append("**Vector Database**: Qdrant with semantic search")
+        sources.append("**Delaware Government Resources**: [Division of Corporations](https://corp.delaware.gov/), [Department of State](https://sos.delaware.gov/), [Division of Revenue](https://revenue.delaware.gov/)")
     
     # Detect location from business description
     business_lower = business_description.lower()
@@ -252,21 +309,27 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
     if any(word in business_lower for word in ['delaware', 'de', 'first state']):
         location_info = "**Location**: Delaware"
         sources.append("**State Resources**: Delaware government websites")
+        sources.append("**Delaware Specific Links**: [Business First Steps](https://firststeps.delaware.gov/), [Professional Licensing](https://sos.delaware.gov/professional-regulation/), [Tax Registration](https://revenue.delaware.gov/business-tax-registration/)")
     elif any(word in business_lower for word in ['texas', 'tx']):
         location_info = "**Location**: Texas"
         sources.append("**State Resources**: Texas Secretary of State")
+        sources.append("**Texas Specific Links**: [Texas Secretary of State](https://www.sos.state.tx.us/), [Texas Comptroller](https://comptroller.texas.gov/), [Texas Workforce Commission](https://www.twc.texas.gov/)")
     elif any(word in business_lower for word in ['california', 'ca']):
         location_info = "**Location**: California"
         sources.append("**State Resources**: California Secretary of State")
+        sources.append("**California Specific Links**: [CA Secretary of State](https://www.sos.ca.gov/), [CA Department of Tax](https://www.cdtfa.ca.gov/), [CA Employment Development](https://www.edd.ca.gov/)")
     elif any(word in business_lower for word in ['new york', 'ny']):
         location_info = "**Location**: New York"
         sources.append("**State Resources**: New York Department of State")
+        sources.append("**New York Specific Links**: [NY Department of State](https://dos.ny.gov/), [NY Department of Tax](https://www.tax.ny.gov/), [NY Department of Labor](https://dol.ny.gov/)")
     elif any(word in business_lower for word in ['florida', 'fl']):
         location_info = "**Location**: Florida"
         sources.append("**State Resources**: Florida Department of State")
+        sources.append("**Florida Specific Links**: [FL Department of State](https://dos.myflorida.com/), [FL Department of Revenue](https://floridarevenue.com/), [FL Department of Economic Opportunity](https://floridajobs.org/)")
     else:
         location_info = "**Location**: General guidance (verify with your state)"
         sources.append("**General Resources**: SBA and local authorities")
+        sources.append("**Federal Resources**: [SBA](https://www.sba.gov/), [IRS](https://www.irs.gov/), [Department of Labor](https://www.dol.gov/)")
     
     return location_info, sources
 
