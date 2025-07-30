@@ -15,6 +15,21 @@ This app helps you navigate business license requirements.
 Enter a brief description of your business and where it's located.
 """)
 
+# Add info about Ollama status
+with st.expander("ℹ️ About this app"):
+    st.markdown("""
+    **Local Mode (Recommended):**
+    - Install Ollama: `brew install ollama` (macOS) or `curl -fsSL https://ollama.ai/install.sh | sh` (Linux)
+    - Pull model: `ollama pull llama3.1:8b`
+    - Start server: `ollama serve`
+    - Get AI-powered personalized guidance
+    
+    **Cloud Mode:**
+    - Works without Ollama
+    - Provides general guidance based on business type
+    - Always verify with local authorities
+    """)
+
 user_input = st.text_area(
     "Business Description", 
     placeholder="e.g., I run a home bakery in Austin, TX",
@@ -26,12 +41,21 @@ if st.button("🚀 Find My License Path", type="primary"):
         with st.spinner("🤖 Consulting agent..."):
             try:
                 response = run_agent(user_input)
-                st.success("✅ Done!")
-                st.markdown("### 📋 License Guidance:")
+                
+                # Check if it's an error response
+                if response.startswith("ERROR:"):
+                    st.warning("⚠️ Ollama not available - using general guidance")
+                    st.info("💡 For AI-powered guidance, run Ollama locally")
+                    st.markdown("### 📋 General License Guidance:")
+                else:
+                    st.success("✅ AI-powered guidance ready!")
+                    st.markdown("### 🤖 AI License Guidance:")
+                
                 st.write(response)
+                
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
-                st.info("💡 Note: This app requires Ollama to be running locally with the llama3.1:8b model")
+                st.error(f"❌ Unexpected error: {str(e)}")
+                st.info("💡 Try running the app locally with Ollama for best results")
     else:
         st.warning("Please enter a business description")
 
@@ -42,7 +66,26 @@ st.markdown("""
 2. Click "Find My License Path"
 3. Get personalized guidance on licenses and permits
 
-### 🔧 Requirements:
-- Ollama server running locally
-- llama3.1:8b model installed (`ollama pull llama3.1:8b`)
+### 🔧 Local Setup (for AI features):
+```bash
+# Install Ollama
+brew install ollama  # macOS
+# OR
+curl -fsSL https://ollama.ai/install.sh | sh  # Linux
+
+# Pull the model
+ollama pull llama3.1:8b
+
+# Start the server
+ollama serve
+
+# Run this app locally
+streamlit run streamlit_app.py
+```
+
+### 📞 Need Help?
+- Contact your local Small Business Administration (SBA)
+- Check with your city/county clerk's office
+- Consult with a business attorney
+- Verify requirements with your state's business licensing office
 """) 
