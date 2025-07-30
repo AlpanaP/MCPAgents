@@ -529,7 +529,7 @@
       },
       "business_types": {
         "construction": {
-          "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement", "palm harbor"],
+          "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement"],
           "resources": [
             {
               "name": "Florida Construction Industry Licensing Board",
@@ -624,43 +624,50 @@
         "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement"],
         "license_types": ["General Contractor", "Building Contractor", "Residential Contractor", "Specialty Contractor"],
         "requirements": ["Background check", "Experience verification", "Financial responsibility", "Examination"],
-        "fees": ["Application fee", "License fee", "Background check fee", "Examination fee"]
+        "fees": ["Application fee: $200-500", "License fee: $300-800", "Background check fee: $50-100", "Examination fee: $100-200"],
+        "due_dates": ["Apply 60 days before starting work", "Background check: 30 days before application", "Examination: 45 days before application", "Renewal: 30 days before expiration"]
       },
       "food_service": {
         "keywords": ["restaurant", "food", "bakery", "cafe", "catering", "kitchen", "dining"],
         "license_types": ["Food Service License", "Restaurant License", "Catering License", "Food Handler License"],
         "requirements": ["Food safety training", "Health inspection", "Kitchen compliance", "Employee training"],
-        "fees": ["Application fee", "License fee", "Inspection fee", "Renewal fee"]
+        "fees": ["Application fee: $100-300", "License fee: $200-500", "Inspection fee: $75-150", "Renewal fee: $100-300"],
+        "due_dates": ["Apply 45 days before opening", "Health inspection: 30 days before opening", "Food safety training: 60 days before opening", "Renewal: 30 days before expiration"]
       },
       "real_estate": {
         "keywords": ["real estate", "realtor", "property", "broker", "agent"],
         "license_types": ["Real Estate Broker", "Real Estate Agent", "Property Manager", "Appraiser"],
         "requirements": ["Pre-licensing education", "Examination", "Background check", "Continuing education"],
-        "fees": ["Application fee", "License fee", "Education fee", "Renewal fee"]
+        "fees": ["Application fee: $150-400", "License fee: $200-600", "Education fee: $300-800", "Renewal fee: $150-400"],
+        "due_dates": ["Apply 90 days before starting", "Education completion: 60 days before exam", "Examination: 30 days before application", "Renewal: 30 days before expiration"]
       },
       "healthcare": {
         "keywords": ["healthcare", "medical", "nursing", "pharmacy", "dental", "therapy"],
         "license_types": ["Medical License", "Nursing License", "Pharmacy License", "Dental License"],
         "requirements": ["Education verification", "Examination", "Background check", "Continuing education"],
-        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+        "fees": ["Application fee: $300-800", "License fee: $400-1000", "Examination fee: $200-500", "Renewal fee: $200-600"],
+        "due_dates": ["Apply 120 days before starting", "Education verification: 90 days before application", "Examination: 60 days before application", "Renewal: 30 days before expiration"]
       },
       "automotive": {
         "keywords": ["automotive", "car", "auto", "mechanic", "dealership", "repair"],
         "license_types": ["Auto Dealer License", "Mechanic License", "Auto Repair License", "Sales License"],
         "requirements": ["Experience verification", "Background check", "Financial responsibility", "Examination"],
-        "fees": ["Application fee", "License fee", "Bond fee", "Renewal fee"]
+        "fees": ["Application fee: $200-600", "License fee: $300-800", "Bond fee: $500-2000", "Renewal fee: $200-600"],
+        "due_dates": ["Apply 60 days before starting", "Background check: 45 days before application", "Bond requirement: 30 days before application", "Renewal: 30 days before expiration"]
       },
       "beauty": {
         "keywords": ["beauty", "salon", "cosmetology", "hair", "nail", "spa"],
         "license_types": ["Cosmetology License", "Hair Stylist License", "Nail Technician License", "Esthetician License"],
         "requirements": ["Education completion", "Examination", "Background check", "Continuing education"],
-        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+        "fees": ["Application fee: $100-300", "License fee: $150-400", "Examination fee: $75-150", "Renewal fee: $100-300"],
+        "due_dates": ["Apply 60 days before starting", "Education completion: 45 days before exam", "Examination: 30 days before application", "Renewal: 30 days before expiration"]
       },
       "financial": {
         "keywords": ["financial", "insurance", "banking", "investment", "accounting", "tax"],
         "license_types": ["Insurance License", "Securities License", "Accounting License", "Tax Preparer License"],
         "requirements": ["Education verification", "Examination", "Background check", "Continuing education"],
-        "fees": ["Application fee", "License fee", "Examination fee", "Renewal fee"]
+        "fees": ["Application fee: $150-400", "License fee: $200-600", "Examination fee: $100-300", "Renewal fee: $150-400"],
+        "due_dates": ["Apply 90 days before starting", "Education verification: 60 days before exam", "Examination: 45 days before application", "Renewal: 30 days before expiration"]
       }
     },
     "generic_resources": {

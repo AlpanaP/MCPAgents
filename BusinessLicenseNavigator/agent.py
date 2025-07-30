@@ -452,37 +452,45 @@ Briefly summarize what the user is asking for.
 List the specific licenses required with:
 - License name and type
 - Brief description of what it covers
+- **Cost information** (application fees, license fees, renewal fees)
+- **Due dates** (when to apply, renewal deadlines)
 - Official government URL for application
 
 ## 📝 DESCRIPTIONS
 Provide clear descriptions of:
 - What each license allows you to do
 - Key requirements and qualifications
-- Typical costs and fees
+- **Detailed cost breakdown** (fees, taxes, insurance requirements)
+- **Timeline information** (processing times, renewal schedules)
 
 ## 🔗 OFFICIAL URLs
 List all relevant official government websites:
 - Main licensing portal
 - Application forms
 - Requirements pages
+- **Fee schedules and payment portals**
 - Contact information
 
 ## 📋 SEQUENCE
 Provide a step-by-step sequence:
 1. Business registration steps
 2. License application process
-3. Timeline estimates
-4. Order of operations
+3. **Cost timeline** (when fees are due)
+4. **Deadline management** (important dates to remember)
+5. Timeline estimates
+6. Order of operations
 
 ## 💡 ADDITIONAL COMMENTS
 Include:
+- **Budget considerations** (total estimated costs)
+- **Payment deadlines** and late fee information
 - Important deadlines and timing
 - Common pitfalls to avoid
 - Pro tips and best practices
 - Local considerations
 - Contact information for questions
 
-Make sure to include specific, actionable advice and relevant links to official government websites. Focus on providing confidence-building, comprehensive information that helps users understand exactly what they need to do.
+Make sure to include specific, actionable advice and relevant links to official government websites. Focus on providing confidence-building, comprehensive information that helps users understand exactly what they need to do, when they need to do it, and how much it will cost.
 
 Sources used: {', '.join(sources[:5])}  # Limit to first 5 sources for brevity
 """

@@ -156,16 +156,29 @@ class GenericLicenseServer:
         if matching_industry:
             pattern = industry_patterns[matching_industry]
             license_types = pattern.get("license_types", [])
+            fees = pattern.get("fees", [])
+            due_dates = pattern.get("due_dates", [])
             
             summary = [
                 f"## License Summary for {business_type.title()} in {location}\n\n",
                 "### Required Licenses:\n"
             ]
             
-            for license_type in license_types:
+            for i, license_type in enumerate(license_types):
                 summary.append(f"- **{license_type}**\n")
+                if i < len(fees):
+                    summary.append(f"  - Cost: {fees[i]}\n")
+                else:
+                    summary.append(f"  - Cost: Application fee + License fee\n")
+                
+                if i < len(due_dates):
+                    summary.append(f"  - Due Date: {due_dates[i]}\n")
+                else:
+                    summary.append(f"  - Due Date: Apply before starting business operations\n")
+                
+                summary.append(f"  - Renewal: Annual renewal required\n\n")
             
-            summary.append(f"\n### Description:\n")
+            summary.append(f"### Description:\n")
             summary.append(f"These licenses are required for {business_type} operations in {location}. ")
             summary.append(f"Each license type covers specific aspects of {matching_industry} business operations.\n\n")
             
@@ -173,20 +186,31 @@ class GenericLicenseServer:
             summary.append(f"- **Main Licensing Portal**: {self.state_config.get('url_patterns', {}).get('main_license_site', 'https://state.gov/')}\n")
             summary.append(f"- **Application Portal**: {self.state_config.get('url_patterns', {}).get('application_portal', 'https://state.gov/apply/')}\n")
             summary.append(f"- **Requirements**: {self.state_config.get('url_patterns', {}).get('requirements', 'https://state.gov/requirements/')}\n")
+            summary.append(f"- **Fee Schedule**: {self.state_config.get('url_patterns', {}).get('fees', 'https://state.gov/fees/')}\n")
             
         else:
             summary = [
                 f"## License Summary for {business_type.title()} in {location}\n\n",
                 "### Required Licenses:\n",
                 "- **General Business License**: Basic business operations\n",
+                "  - Cost: $50-200 application fee\n",
+                "  - Due Date: Apply before starting business operations\n",
+                "  - Renewal: Annual renewal required\n\n",
                 "- **Industry-Specific License**: Based on business type\n",
-                "- **Local Business License**: City/county requirements\n\n",
+                "  - Cost: $100-500 application fee\n",
+                "  - Due Date: Apply before starting business operations\n",
+                "  - Renewal: Annual renewal required\n\n",
+                "- **Local Business License**: City/county requirements\n",
+                "  - Cost: $25-150 application fee\n",
+                "  - Due Date: Apply before starting business operations\n",
+                "  - Renewal: Annual renewal required\n\n",
                 "### Description:\n",
                 f"Standard business licensing requirements for {business_type} operations in {location}.\n\n",
                 "### Application URLs:\n",
                 "- **Main Licensing Portal**: https://state.gov/\n",
                 "- **Application Portal**: https://state.gov/apply/\n",
-                "- **Requirements**: https://state.gov/requirements/\n"
+                "- **Requirements**: https://state.gov/requirements/\n",
+                "- **Fee Schedule**: https://state.gov/fees/\n"
             ]
         
         return ToolResult(content=[TextContent(type="text", text="".join(summary))])
@@ -206,6 +230,7 @@ class GenericLicenseServer:
             pattern = industry_patterns[matching_industry]
             requirements = pattern.get("requirements", [])
             fees = pattern.get("fees", [])
+            due_dates = pattern.get("due_dates", [])
             
             result = [
                 f"## {license_type} Requirements in {state}\n\n",
@@ -215,9 +240,19 @@ class GenericLicenseServer:
             for requirement in requirements:
                 result.append(f"- {requirement}\n")
             
-            result.append(f"\n### Fees:\n")
+            result.append(f"\n### Costs and Fees:\n")
             for fee in fees:
                 result.append(f"- {fee}\n")
+            
+            result.append(f"\n### Due Dates:\n")
+            if due_dates:
+                for due_date in due_dates:
+                    result.append(f"- {due_date}\n")
+            else:
+                result.append("- **Application**: Submit 30-60 days before planned business start\n")
+                result.append("- **Background Check**: Complete before license approval\n")
+                result.append("- **Examination**: Pass required exam before application\n")
+                result.append("- **Renewal**: Annual renewal due 30 days before expiration\n")
             
             result.append(f"\n### Application Process:\n")
             result.append("1. Complete required education/training\n")
@@ -225,7 +260,7 @@ class GenericLicenseServer:
             result.append("3. Submit background check\n")
             result.append("4. Provide proof of financial responsibility\n")
             result.append("5. Submit application with fees\n")
-            result.append("6. Wait for approval\n\n")
+            result.append("6. Wait for approval (4-8 weeks)\n\n")
             
             result.append(f"### Application URLs:\n")
             result.append(f"- **Application Portal**: {self.state_config.get('url_patterns', {}).get('application_portal', 'https://state.gov/apply/')}\n")
@@ -241,18 +276,24 @@ class GenericLicenseServer:
                 "- Submit background check\n",
                 "- Provide proof of financial responsibility\n",
                 "- Submit application with fees\n\n",
-                "### Fees:\n",
-                "- Application fee\n",
-                "- License fee\n",
-                "- Background check fee\n",
-                "- Examination fee\n\n",
+                "### Costs and Fees:\n",
+                "- Application fee: $50-200\n",
+                "- License fee: $100-500\n",
+                "- Background check fee: $25-75\n",
+                "- Examination fee: $50-150\n",
+                "- Renewal fee: $50-200 annually\n\n",
+                "### Due Dates:\n",
+                "- **Application**: Submit 30-60 days before planned business start\n",
+                "- **Background Check**: Complete before license approval\n",
+                "- **Examination**: Pass required exam before application\n",
+                "- **Renewal**: Annual renewal due 30 days before expiration\n\n",
                 "### Application Process:\n",
                 "1. Complete required education/training\n",
                 "2. Pass required examination\n",
                 "3. Submit background check\n",
                 "4. Provide proof of financial responsibility\n",
                 "5. Submit application with fees\n",
-                "6. Wait for approval\n\n",
+                "6. Wait for approval (4-8 weeks)\n\n",
                 "### Application URLs:\n",
                 "- **Application Portal**: https://state.gov/apply/\n",
                 "- **Requirements**: https://state.gov/requirements/\n",

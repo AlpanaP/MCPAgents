@@ -94,9 +94,9 @@ class FloridaLicenseServer:
             elif name == "get_florida_business_steps":
                 return await self._get_florida_business_steps()
             elif name == "get_florida_construction_requirements":
-                return await self._get_florida_construction_requirements()
+                return await self._get_construction_requirements(arguments)
             elif name == "get_palm_harbor_requirements":
-                return await self._get_palm_harbor_requirements()
+                return await self._get_local_requirements(arguments)
             else:
                 return ToolResult(content=[TextContent(type="text", text=f"Unknown tool: {name}")])
         except Exception as e:
@@ -268,91 +268,87 @@ class FloridaLicenseServer:
         
         return ToolResult(content=[TextContent(type="text", text="".join(steps))])
     
-    async def _get_florida_construction_requirements(self) -> ToolResult:
-        """Get specific requirements for Florida construction contractor licenses."""
-        requirements = [
-            "## Florida Construction Contractor License Requirements\n\n",
-            "### Basic Requirements:\n",
-            "- Must be at least 18 years old\n",
-            "- Must be a U.S. citizen or legal resident\n",
-            "- Must have good moral character\n",
-            "- Must pass background check\n\n",
-            "### Education and Experience:\n",
-            "- Complete required education hours\n",
-            "- Demonstrate relevant work experience\n",
-            "- Pass Florida contractor examination\n\n",
-            "### Financial Requirements:\n",
-            "- Provide proof of financial responsibility\n",
-            "- Obtain surety bond or insurance\n",
-            "- Demonstrate financial stability\n\n",
-            "### Application Process:\n",
-            "1. Register business entity with Florida Division of Corporations\n",
-            "2. Complete background check through DBPR\n",
-            "3. Study and pass Florida contractor exam\n",
-            "4. Obtain proof of financial responsibility\n",
-            "5. Submit application through MyFloridaLicense.com\n",
-            "6. Pay application and licensing fees\n",
-            "7. Wait for approval (typically 4-6 weeks)\n\n",
-            "### Fees:\n",
-            "- Application fee: $249\n",
-            "- License fee: $209\n",
-            "- Background check: $50\n",
-            "- Exam fee: $135\n",
-            "- Total estimated cost: $643\n\n",
-            "### License Types:\n",
-            "- **General Contractor**: Residential and commercial construction\n",
-            "- **Building Contractor**: Structural construction\n",
-            "- **Residential Contractor**: Single-family and multi-family homes\n",
-            "- **Roofing Contractor**: Roof installation and repair\n",
-            "- **Plumbing Contractor**: Plumbing systems\n",
-            "- **Electrical Contractor**: Electrical systems\n",
-            "- **HVAC Contractor**: Heating, ventilation, air conditioning\n\n",
-            "**Source**: [Florida Construction Industry Licensing Board](https://www.myfloridalicense.com/DBPR/construction-industry-licensing-board/)"
-        ]
-        
-        return ToolResult(content=[TextContent(type="text", text="".join(requirements))])
-    
-    async def _get_palm_harbor_requirements(self) -> ToolResult:
-        """Get local requirements for business in Palm Harbor, Florida."""
-        requirements = [
-            "## Palm Harbor, Florida Business Requirements\n\n",
-            "### Location Information:\n",
-            "- **County**: Pinellas County\n",
-            "- **State**: Florida\n",
-            "- **Population**: Approximately 60,000\n",
-            "- **Business Climate**: Growing residential and commercial area\n\n",
-            "### Local Government Requirements:\n",
-            "1. **Palm Harbor Development Services Department**\n",
-            "   - Building permits for construction projects\n",
-            "   - Zoning compliance checks\n",
-            "   - Development approvals\n",
-            "   - Contact: (727) 784-3600\n\n",
-            "2. **Pinellas County Building Department**\n",
-            "   - County-level building permits\n",
-            "   - Construction inspections\n",
-            "   - Code compliance\n",
-            "   - Contact: (727) 464-3888\n\n",
-            "### Business Registration Steps:\n",
-            "1. **State Level**: Register with Florida Division of Corporations\n",
-            "2. **County Level**: Check Pinellas County requirements\n",
-            "3. **City Level**: Apply for Palm Harbor business license\n",
-            "4. **Industry Level**: Obtain required professional licenses\n\n",
-            "### Construction-Specific Requirements:\n",
-            "- Valid Florida contractor license required\n",
-            "- Palm Harbor building permits for construction projects\n",
-            "- Pinellas County inspections required\n",
-            "- Compliance with local building codes\n",
-            "- Zoning approval for commercial projects\n\n",
-            "### Local Resources:\n",
-            "- **Palm Harbor Development Services**: https://www.palmharbor.org/departments/development-services/\n",
-            "- **Pinellas County Building Department**: https://www.pinellascounty.org/building/\n",
-            "- **Palm Harbor Chamber of Commerce**: Local business networking\n",
-            "- **Pinellas County Economic Development**: Business support services\n\n",
-            "### Contact Information:\n",
-            "- **Palm Harbor City Hall**: (727) 784-3600\n",
-            "- **Pinellas County Building**: (727) 464-3888\n",
-            "- **Florida DBPR**: (850) 487-1395\n\n",
-            "**Source**: [Palm Harbor Development Services](https://www.palmharbor.org/departments/development-services/)"
-        ]
-        
-        return ToolResult(content=[TextContent(type="text", text="".join(requirements))]) 
+    async def _get_construction_requirements(self, arguments: Dict[str, Any]) -> ToolResult:
+        """Get specific construction requirements for Florida."""
+        return ToolResult(content=[TextContent(type="text", text="""## Florida Construction License Requirements
+
+### License Types:
+- **General Contractor License**: Residential and commercial construction
+  - Cost: $250-750 application fee
+  - Due Date: Apply 90 days before starting work
+  - Renewal: Annual renewal required
+
+- **Building Contractor License**: Structural construction projects
+  - Cost: $400-1000 application fee
+  - Due Date: Apply 120 days before starting work
+  - Renewal: Annual renewal required
+
+- **Residential Contractor License**: Home construction and renovation
+  - Cost: $200-600 application fee
+  - Due Date: Apply 60 days before starting work
+  - Renewal: Annual renewal required
+
+### Requirements:
+- Experience verification (4 years minimum)
+- Background check and fingerprinting
+- Financial responsibility proof
+- Insurance coverage ($300,000 minimum)
+- Examination (passing score required)
+
+### Application Process:
+1. Complete required education (14 hours)
+2. Pass state examination
+3. Submit background check
+4. Provide financial responsibility proof
+5. Submit application with fees
+6. Wait for approval (6-12 weeks)
+
+### Important Deadlines:
+- **Application**: Submit 90 days before planned start
+- **Examination**: Complete 60 days before application
+- **Background Check**: Submit 45 days before application
+- **Renewal**: 30 days before expiration
+
+**Source**: [Florida Department of Business and Professional Regulation](https://www.myfloridalicense.com/DBPR/construction-industry/)""")])
+
+    async def _get_local_requirements(self, arguments: Dict[str, Any]) -> ToolResult:
+        """Get local requirements for Palm Harbor area."""
+        return ToolResult(content=[TextContent(type="text", text="""## Palm Harbor Local Business Requirements
+
+### Local Licenses Required:
+- **Pinellas County Business Tax Receipt**: Required for all businesses
+  - Cost: $50-200 annually
+  - Due Date: Apply before starting operations
+  - Renewal: Annual renewal required
+
+- **Palm Harbor City Business License**: Local business operations
+  - Cost: $25-150 annually
+  - Due Date: Apply before starting operations
+  - Renewal: Annual renewal required
+
+- **Local Zoning Compliance**: Property use verification
+  - Cost: $100-300 one-time fee
+  - Due Date: Before purchasing/leasing property
+  - Renewal: Not required
+
+### Local Requirements:
+- Zoning compliance verification
+- Sign permit (if applicable)
+- Parking requirements
+- ADA compliance
+- Environmental permits (if needed)
+
+### Application Process:
+1. Verify zoning compliance
+2. Obtain sign permits (if needed)
+3. Apply for business tax receipt
+4. Apply for city business license
+5. Wait for approval (2-4 weeks)
+
+### Important Deadlines:
+- **Zoning Check**: Before property purchase/lease
+- **Business Tax Receipt**: Before starting operations
+- **City License**: Before starting operations
+- **Renewals**: 30 days before expiration
+
+**Source**: [Pinellas County Tax Collector](https://www.pinellastaxcollector.gov/) and [Palm Harbor City Hall](https://www.palmharbor.org/)""")]) 

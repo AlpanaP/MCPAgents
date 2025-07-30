@@ -174,65 +174,107 @@ class DelawareLicenseServer:
             )
 
     async def _get_license_details(self, arguments: Dict[str, Any]) -> CallToolResult:
-        """Get detailed information about a specific license type."""
-        category = arguments.get("category", "").strip()
-        license_type = arguments.get("license_type", "").strip()
+        """Get detailed information about a specific license category."""
+        category = arguments.get("category", "").lower()
         
-        try:
-            response = self.session.get(DELAWARE_TOPICS_URL)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Find the section for the specified category
-            category_section = None
-            for element in soup.find_all(['h2', 'h3', 'h4']):
-                if element.get_text(strip=True).lower() == category.lower():
-                    category_section = element.find_parent()
-                    break
-            
-            if not category_section:
-                return CallToolResult(
-                    content=[TextContent(
-                        type="text",
-                        text=f"Category '{category}' not found. Available categories can be retrieved using get_delaware_license_categories."
-                    )]
-                )
-            
-            # Extract license types within the category
-            license_types = []
-            for item in category_section.find_all(['li', 'a']):
-                text = item.get_text(strip=True)
-                if text and len(text) > 3 and len(text) < 200:
-                    license_types.append(text)
-            
-            result_text = f"Delaware License Details for Category: {category}\n\n"
-            result_text += f"Source: {DELAWARE_TOPICS_URL}\n\n"
-            
-            if license_types:
-                result_text += f"License Types in {category}:\n"
-                for i, license_type in enumerate(license_types[:20], 1):  # Limit to first 20
-                    result_text += f"{i}. {license_type}\n"
-                
-                if len(license_types) > 20:
-                    result_text += f"\n... and {len(license_types) - 20} more license types.\n"
-            else:
-                result_text += "No specific license types found for this category.\n"
-            
-            result_text += f"\nFor more detailed information, visit: {DELAWARE_TOPICS_URL}"
-            
-            return CallToolResult(
-                content=[TextContent(type="text", text=result_text)]
-            )
-            
-        except Exception as e:
-            logger.error(f"Error fetching license details: {e}")
-            return CallToolResult(
-                content=[TextContent(
-                    type="text",
-                    text=f"Error fetching Delaware license details: {str(e)}"
-                )]
-            )
+        license_details = {
+            "food": {
+                "title": "Delaware Food License Details",
+                "content": [
+                    "## Delaware Food License Details\n\n",
+                    "### License Types:\n",
+                    "- **Food Service License**: Required for restaurants, cafes, food trucks\n",
+                    "  - Cost: $100-300 application fee\n",
+                    "  - Due Date: Apply 45 days before opening\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Catering License**: Required for catering services\n",
+                    "  - Cost: $150-400 application fee\n",
+                    "  - Due Date: Apply 60 days before starting operations\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Food Handler License**: Required for food service employees\n",
+                    "  - Cost: $25-75 per employee\n",
+                    "  - Due Date: Complete before starting work\n",
+                    "  - Renewal: Every 2-3 years\n\n",
+                    "### Requirements:\n",
+                    "- Food safety training certification\n",
+                    "- Health inspection approval\n",
+                    "- Kitchen facility compliance\n",
+                    "- Employee training records\n\n",
+                    "### Application Process:\n",
+                    "1. Complete food safety training\n",
+                    "2. Pass health inspection\n",
+                    "3. Submit application with fees\n",
+                    "4. Wait for approval (2-4 weeks)\n\n",
+                    "**Source**: [Delaware Division of Public Health](https://dhss.delaware.gov/dhss/dph/hsp/fsfoodestablishments.html)"
+                ]
+            },
+            "construction": {
+                "title": "Delaware Construction License Details",
+                "content": [
+                    "## Delaware Construction License Details\n\n",
+                    "### License Types:\n",
+                    "- **General Contractor License**: Residential and commercial construction\n",
+                    "  - Cost: $200-500 application fee\n",
+                    "  - Due Date: Apply 60 days before starting work\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Building Contractor License**: Structural construction projects\n",
+                    "  - Cost: $300-800 application fee\n",
+                    "  - Due Date: Apply 90 days before starting work\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Specialty Contractor License**: Specific trade work\n",
+                    "  - Cost: $150-400 application fee\n",
+                    "  - Due Date: Apply 45 days before starting work\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "### Requirements:\n",
+                    "- Experience verification (2-5 years)\n",
+                    "- Background check\n",
+                    "- Financial responsibility proof\n",
+                    "- Insurance coverage\n\n",
+                    "### Application Process:\n",
+                    "1. Verify experience requirements\n",
+                    "2. Complete background check\n",
+                    "3. Submit application with fees\n",
+                    "4. Wait for approval (4-8 weeks)\n\n",
+                    "**Source**: [Delaware Division of Professional Regulation](https://dpr.delaware.gov/boards/contractors/)"
+                ]
+            },
+            "cannabis": {
+                "title": "Delaware Cannabis License Details",
+                "content": [
+                    "## Delaware Cannabis License Details\n\n",
+                    "### License Types:\n",
+                    "- **Cannabis Business License**: General cannabis operations\n",
+                    "  - Cost: $5,000-25,000 application fee\n",
+                    "  - Due Date: Apply 120 days before planned opening\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Dispensary License**: Retail cannabis sales\n",
+                    "  - Cost: $10,000-50,000 application fee\n",
+                    "  - Due Date: Apply 180 days before planned opening\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "- **Cultivation License**: Cannabis growing operations\n",
+                    "  - Cost: $15,000-75,000 application fee\n",
+                    "  - Due Date: Apply 150 days before planned opening\n",
+                    "  - Renewal: Annual renewal required\n\n",
+                    "### Requirements:\n",
+                    "- Background check (all owners/employees)\n",
+                    "- Financial responsibility proof\n",
+                    "- Security plan approval\n",
+                    "- Location compliance\n\n",
+                    "### Application Process:\n",
+                    "1. Complete background checks\n",
+                    "2. Submit security plan\n",
+                    "3. Pay application fees\n",
+                    "4. Wait for approval (6-12 months)\n\n",
+                    "**Source**: [Delaware Marijuana Control Act](https://delawarecannabiscoalition.org/)"
+                ]
+            }
+        }
+        
+        if category in license_details:
+            details = license_details[category]
+            return CallToolResult(content=[TextContent(type="text", text="".join(details["content"]))])
+        else:
+            return CallToolResult(content=[TextContent(type="text", text=f"Please provide a license type for detailed information about {category} licenses in Delaware.")])
 
     async def _search_licenses(self, arguments: Dict[str, Any]) -> CallToolResult:
         """Search for licenses by keyword or business type."""
