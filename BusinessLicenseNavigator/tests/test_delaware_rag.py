@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-Test script for Delaware RAG MCP tools with Qdrant
-Demonstrates how to use the Delaware business license MCP server with RAG capabilities using Qdrant
+Test script for Delaware RAG MCP tools
+Tests the Delaware RAG server functionality with Qdrant
 """
 
 import asyncio
-import json
 import sys
-from delaware_rag_server import DelawareRAGServer
+import os
+
+# Add the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from delaware_rag.delaware_rag_server import DelawareRAGServer
 
 async def test_delaware_rag_tools():
     """Test the Delaware RAG MCP tools with Qdrant."""

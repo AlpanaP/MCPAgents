@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
 Test script for Delaware MCP tools
-Demonstrates how to use the Delaware business license MCP server
+Tests the Delaware MCP server functionality
 """
 
 import asyncio
-import json
 import sys
-from delaware_mcp_server import DelawareLicenseServer
+import os
+
+# Add the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from delaware_rag.delaware_mcp_server import DelawareLicenseServer
 
 async def test_delaware_tools():
     """Test the Delaware MCP tools."""

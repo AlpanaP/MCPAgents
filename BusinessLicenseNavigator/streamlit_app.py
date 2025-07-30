@@ -1,7 +1,21 @@
-# streamlit_app.py
+# streamlit_app.py - Main app for Streamlit Cloud deployment
 import streamlit as st
 import os
-from agent import run_agent
+import sys
+
+# Add the current directory to the path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from agent import run_agent, DELAWARE_RAG_AVAILABLE
+except ImportError as e:
+    st.error(f"Import error: {e}")
+    st.info("Please ensure all dependencies are installed")
+    
+    def run_agent(user_input):
+        return "Error: Dependencies not available. Please check the requirements.txt file."
+    
+    DELAWARE_RAG_AVAILABLE = False
 
 st.set_page_config(
     page_title="Business License Navigator",
@@ -32,10 +46,76 @@ with st.expander("ℹ️ About this app"):
     - Start server: `ollama serve`
     - Works locally only
     
-    **3. Fallback Mode:**
+    **3. Delaware RAG Integration:**
+    - **NEW**: Delaware-specific license information using RAG
+    - Vector database with Qdrant for semantic search
+    - Official Delaware Business First Steps data
+    - Available for Delaware-related queries
+    
+    **4. Fallback Mode:**
     - No AI required
     - Provides general guidance based on business type
     - Always verify with local authorities
+    """)
+
+# Delaware RAG Status
+with st.expander("🏛️ Delaware RAG Status"):
+    if DELAWARE_RAG_AVAILABLE:
+        st.success("✅ Delaware RAG Integration Active")
+        st.markdown("""
+        **Delaware RAG Features:**
+        - 🎯 **Semantic Search**: Find relevant licenses using AI
+        - 🔍 **Similarity Matching**: Discover related license types
+        - 📋 **Business Steps**: Official Delaware 4-step process
+        - 🏢 **License Categories**: All Delaware license categories
+        - 📊 **Relevance Scoring**: AI-powered result ranking
+        
+        **How to use:**
+        - Include "Delaware" or "DE" in your query
+        - Or just describe your business - RAG will enhance results
+        - Get official Delaware Business First Steps information
+        """)
+    else:
+        st.warning("⚠️ Delaware RAG Integration Not Available")
+        st.markdown("""
+        **To enable Delaware RAG:**
+        1. Install dependencies: `pip install -r requirements.txt`
+        2. Setup Qdrant: `python setup_qdrant.py`
+        3. Test RAG tools: `python test_delaware_rag.py`
+        
+        **Benefits of Delaware RAG:**
+        - Official Delaware government data
+        - Semantic understanding of business types
+        - Similarity matching for related licenses
+        - Relevance scoring for better results
+        """)
+
+# Source Attribution Info
+with st.expander("📍 Response Sources"):
+    st.markdown("""
+    **How Response Sources Work:**
+    
+    The app automatically detects your location and uses appropriate sources:
+    
+    **📍 Location Detection:**
+    - Mentions of states (Delaware, Texas, California, etc.)
+    - State abbreviations (DE, TX, CA, etc.)
+    - City names with state context
+    
+    **🤖 AI Sources:**
+    - **Gemini**: Google's AI for cloud deployment
+    - **Ollama**: Local AI for privacy-focused users
+    - **Fallback**: Rule-based guidance when AI unavailable
+    
+    **🏛️ State-Specific Sources:**
+    - **Delaware**: Official Delaware Business First Steps + RAG
+    - **Other States**: General guidance + state-specific links
+    - **General**: SBA and local authority resources
+    
+    **📊 Data Quality:**
+    - AI responses are marked with source attribution
+    - Delaware queries get official government data
+    - All responses include relevant state/local links
     """)
 
 # Gemini API Key configuration
@@ -61,9 +141,25 @@ if gemini_available:
 else:
     st.sidebar.warning("⚠️ Gemini API key not set")
 
+if DELAWARE_RAG_AVAILABLE:
+    st.sidebar.success("✅ Delaware RAG Available")
+else:
+    st.sidebar.warning("⚠️ Delaware RAG not available")
+
+# Location detection info
+st.sidebar.markdown("### 📍 Location Detection")
+st.sidebar.info("""
+The app automatically detects your location from your query and provides appropriate state/local resources.
+
+**Examples:**
+- "bakery in Delaware" → DE resources
+- "consulting in Texas" → TX resources  
+- "restaurant in CA" → CA resources
+""")
+
 user_input = st.text_area(
     "Business Description", 
-    placeholder="e.g., I run a home bakery in Austin, TX",
+    placeholder="e.g., I run a home bakery in Delaware",
     height=100
 )
 
@@ -96,6 +192,7 @@ st.markdown("""
 1. Describe your business type and location
 2. Click "Find My License Path"
 3. Get personalized guidance on licenses and permits
+4. Review the source attribution for transparency
 
 ### 🔧 Setup Options:
 
@@ -120,6 +217,21 @@ ollama pull llama3.1:8b
 ollama serve
 
 # Run this app locally
+streamlit run streamlit_app.py
+```
+
+**Option 3: Delaware RAG Integration**
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup Qdrant vector database
+python setup_qdrant.py
+
+# Test Delaware RAG tools
+python test_delaware_rag.py
+
+# Run the app
 streamlit run streamlit_app.py
 ```
 

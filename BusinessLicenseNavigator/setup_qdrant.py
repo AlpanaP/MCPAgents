@@ -10,6 +10,9 @@ import os
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 
+# Add the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 def check_qdrant_installation():
     """Check if Qdrant is installed and running."""
     try:

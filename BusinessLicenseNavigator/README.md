@@ -1,139 +1,153 @@
 # Business License Navigator
 
-An AI-powered application that helps entrepreneurs navigate business license requirements using Google's Gemini AI or local Ollama models.
+A comprehensive AI-powered business license guidance system with Delaware RAG (Retrieval-Augmented Generation) integration.
 
-## 🚀 Streamlit Deployment
-
-### Option 1: Deploy to Streamlit Cloud (Recommended)
-
-1. **Fork this repository** to your GitHub account
-2. **Get a Gemini API key** from [Google AI Studio](https://makersuite.google.com/app/apikey)
-3. **Go to [Streamlit Cloud](https://share.streamlit.io/)**
-4. **Connect your GitHub account**
-5. **Deploy the app**:
-   - Repository: `your-username/MCPAgents`
-   - Main file path: `BusinessLicenseNavigator/streamlit_app.py`
-   - Python version: 3.11
-6. **Add environment variable**:
-   - Key: `GEMINI_API_KEY`
-   - Value: Your Gemini API key
-
-### Option 2: Local Development
-
-1. **Install dependencies**:
-   ```bash
-   cd BusinessLicenseNavigator
-   pip install -r requirements.txt
-   ```
-
-2. **Set up Gemini AI (Recommended)**:
-   ```bash
-   # Get API key from https://makersuite.google.com/app/apikey
-   export GEMINI_API_KEY=your_key_here
-   streamlit run streamlit_app.py
-   ```
-
-3. **Or set up Ollama (Local only)**:
-   ```bash
-   # Install Ollama
-   brew install ollama  # macOS
-   # OR
-   curl -fsSL https://ollama.ai/install.sh | sh  # Linux
-   
-   # Pull the model
-   ollama pull llama3.1:8b
-   
-   # Start Ollama server
-   ollama serve
-   
-   # Run the app
-   streamlit run streamlit_app.py
-   ```
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
 BusinessLicenseNavigator/
-├── streamlit_app.py      # Main Streamlit app
-├── agent.py             # AI integration (Gemini + Ollama)
-├── requirements.txt     # Dependencies
-├── .streamlit/         # Streamlit config
-│   └── config.toml
-└── ui/                 # Alternative UI
-    └── app.py
+├── agent.py                 # Main AI agent with Delaware RAG integration
+├── streamlit_app.py         # Streamlit web application
+├── setup_qdrant.py          # Qdrant vector database setup script
+├── requirements.txt          # Python dependencies
+├── pyproject.toml           # Project configuration
+├── README.md               # This file
+├── delaware_rag/           # Delaware RAG package
+│   ├── __init__.py
+│   ├── delaware_rag_server.py    # RAG-enhanced MCP server
+│   └── delaware_mcp_server.py    # Basic MCP server
+├── tests/                  # Test suite
+│   ├── __init__.py
+│   ├── test_delaware_rag.py     # RAG functionality tests
+│   └── test_delaware_mcp.py     # MCP functionality tests
+├── docs/                   # Documentation
+│   ├── DELAWARE_RAG_README.md   # Delaware RAG documentation
+│   └── DELAWARE_MCP_README.md   # Delaware MCP documentation
+├── config/                 # Configuration files
+│   ├── license_sources.json     # License sources configuration
+│   └── delaware_mcp.json        # MCP server configuration
+└── ui/                     # UI components
+    └── app.py              # Legacy UI (deprecated)
+```
+
+## 🚀 Features
+
+### **AI-Powered Guidance**
+- **Gemini AI**: Google's AI for cloud deployment
+- **Ollama**: Local AI for privacy-focused users
+- **Fallback Mode**: Rule-based guidance when AI unavailable
+
+### **Delaware RAG Integration**
+- **Semantic Search**: AI-powered license search
+- **Similarity Matching**: Find related license types
+- **Vector Database**: Qdrant for efficient retrieval
+- **Official Data**: Delaware Business First Steps integration
+
+### **Source Attribution**
+- **Location Detection**: Automatic state/province detection
+- **Transparency**: Clear source attribution for all responses
+- **State-Specific Links**: Relevant government resources
+
+## 🛠️ Setup
+
+### **1. Install Dependencies**
+```bash
+cd BusinessLicenseNavigator
+pip install -r requirements.txt
+```
+
+### **2. Setup Qdrant Vector Database**
+```bash
+python setup_qdrant.py
+```
+
+### **3. Test Delaware RAG Tools**
+```bash
+python tests/test_delaware_rag.py
+```
+
+### **4. Run the Application**
+```bash
+streamlit run streamlit_app.py
+```
+
+## 🧪 Testing
+
+### **Run All Tests**
+```bash
+python -m pytest tests/
+```
+
+### **Test Delaware RAG**
+```bash
+python tests/test_delaware_rag.py
+```
+
+### **Test Delaware MCP**
+```bash
+python tests/test_delaware_mcp.py
+```
+
+## 📚 Documentation
+
+- **Delaware RAG**: See `docs/DELAWARE_RAG_README.md`
+- **Delaware MCP**: See `docs/DELAWARE_MCP_README.md`
+- **Configuration**: See `config/license_sources.json`
+
+## 🎯 Usage Examples
+
+### **Delaware Queries**
+```
+"I run a home bakery in Delaware"
+"Restaurant business in DE"
+"Consulting services in Delaware"
+```
+
+### **Other State Queries**
+```
+"Online business in Texas"
+"Food truck in California"
+"Consulting in New York"
 ```
 
 ## 🔧 Configuration
 
-### AI Options
+### **Environment Variables**
+```bash
+export GEMINI_API_KEY=your_gemini_api_key_here
+```
 
-1. **Gemini AI (Recommended)**
-   - Works in cloud deployment
-   - Powered by Google's Gemini 1.5 Flash
-   - Requires API key from Google AI Studio
-   - Free tier available
+### **Qdrant Configuration**
+- **Host**: localhost
+- **Port**: 6333
+- **Collection**: delaware_licenses
+- **Vector Size**: 384 (all-MiniLM-L6-v2)
 
-2. **Local Ollama**
-   - Works locally only
-   - Uses llama3.1:8b model
-   - No API key required
-   - Requires local Ollama installation
+## 📊 Response Sources
 
-3. **Fallback Mode**
-   - No AI required
-   - Rule-based guidance
-   - Always available
+The system automatically detects location and provides appropriate sources:
 
-### Streamlit Configuration
-The app is configured in `.streamlit/config.toml`:
-- Headless mode enabled
-- CORS disabled
-- Usage stats disabled
-
-### Requirements
-- Python 3.11+
-- Streamlit 1.47.1+
-- Requests 2.31.0+
-- Google Generative AI 0.3.0+
-- Gemini API key (for AI features)
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Gemini API Error**: Check your API key and quota
-2. **Ollama Connection Error**: Ensure Ollama server is running
-3. **Import Error**: Make sure you're running from the correct directory
-
-### Deployment Issues
-
-1. **Requirements.txt**: All dependencies are listed
-2. **Python Version**: Use Python 3.11 for best compatibility
-3. **File Path**: Use `streamlit_app.py` as the main file
-4. **Environment Variables**: Set `GEMINI_API_KEY` in Streamlit Cloud
-
-## 📝 Usage
-
-1. **Set up AI** (optional):
-   - Get Gemini API key from Google AI Studio
-   - Or install Ollama locally
-   
-2. **Use the app**:
-   - Enter your business description
-   - Click "Find My License Path"
-   - Get personalized guidance
-
-3. **Get guidance**:
-   - AI-powered responses (with Gemini/Ollama)
-   - Fallback guidance (without AI)
-   - Always verify with local authorities
+- **Delaware**: Official Delaware Business First Steps + RAG
+- **Texas**: Texas Secretary of State resources
+- **California**: California Secretary of State resources
+- **New York**: New York Department of State resources
+- **Florida**: Florida Department of State resources
+- **General**: SBA and local authority resources
 
 ## 🤝 Contributing
 
-Feel free to submit issues and enhancement requests!
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-## 🔗 Links
+## 📄 License
 
-- [Google AI Studio](https://makersuite.google.com/app/apikey) - Get Gemini API key
-- [Ollama](https://ollama.ai/) - Local AI models
-- [Streamlit Cloud](https://share.streamlit.io/) - Deploy your app
+This project is licensed under the MIT License.
+
+## 📞 Support
+
+- **Delaware Business First Steps**: 1-800-292-7935
+- **Local SBA Office**: Contact your local Small Business Administration
+- **Documentation**: See `docs/` directory for detailed guides

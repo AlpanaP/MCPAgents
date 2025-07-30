@@ -13,7 +13,7 @@ load_dotenv()
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from delaware_rag_server import DelawareRAGServer
+    from delaware_rag.delaware_rag_server import DelawareRAGServer
     DELAWARE_RAG_AVAILABLE = True
 except ImportError:
     DELAWARE_RAG_AVAILABLE = False
