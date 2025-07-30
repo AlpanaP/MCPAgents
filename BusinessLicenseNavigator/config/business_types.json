@@ -1,0 +1,645 @@
+{
+  "business_types": {
+    "cannabis": {
+      "keywords": ["cannabis", "marijuana", "weed", "dispensary", "pot"],
+      "search_query": "cannabis",
+      "title": "Delaware Cannabis Dispensary Requirements",
+      "icon": "🌿",
+      "steps": [
+        {
+          "title": "Pre-Application Requirements",
+          "items": [
+            "Register your business with Delaware Division of Corporations",
+            "Obtain a Delaware business license",
+            "Secure a compliant location (500ft from schools, 1000ft from churches)",
+            "Develop a comprehensive business plan",
+            "Prepare financial statements and proof of funding"
+          ]
+        },
+        {
+          "title": "Application Process",
+          "items": [
+            "Submit application to Delaware Cannabis Compliance Commission (DCCC)",
+            "Pay application fee ($5,000 for dispensary license)",
+            "Provide detailed security plan",
+            "Submit employee background check information",
+            "Provide inventory management system details"
+          ]
+        },
+        {
+          "title": "Facility Requirements",
+          "items": [
+            "Install security alarm system",
+            "Set up surveillance cameras (24/7 recording)",
+            "Implement secure cash handling procedures",
+            "Create secure product storage areas",
+            "Install proper lighting and signage"
+          ]
+        },
+        {
+          "title": "Staff Training & Compliance",
+          "items": [
+            "Complete Delaware cannabis compliance training",
+            "Train all employees on state regulations",
+            "Establish record-keeping procedures",
+            "Set up monitoring and reporting systems"
+          ]
+        },
+        {
+          "title": "Operational Requirements",
+          "items": [
+            "Maintain detailed sales and inventory records",
+            "Conduct regular compliance audits",
+            "Submit required reports to DCCC",
+            "Renew license annually"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Delaware Cannabis Compliance Commission", "url": "https://cannabis.delaware.gov/"},
+          {"name": "Cannabis Licensing Portal", "url": "https://cannabis.delaware.gov/licensing/"},
+          {"name": "Cannabis Regulations", "url": "https://cannabis.delaware.gov/regulations/"},
+          {"name": "Application Portal", "url": "https://cannabis.delaware.gov/apply/"},
+          {"name": "Business Guide", "url": "https://cannabis.delaware.gov/business-guide/"},
+          {"name": "Compliance Requirements", "url": "https://cannabis.delaware.gov/compliance/"},
+          {"name": "Security Requirements", "url": "https://cannabis.delaware.gov/security/"},
+          {"name": "Testing Requirements", "url": "https://cannabis.delaware.gov/testing/"}
+        ],
+        "legal": [
+          {"name": "Delaware Marijuana Control Act", "url": "https://delcode.delaware.gov/title16/c047/"},
+          {"name": "Office of Medical Marijuana", "url": "https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html"}
+        ],
+        "support": [
+          {"name": "DCCC Helpline", "url": "tel:1-800-292-7935", "phone": "1-800-292-7935"},
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"}
+        ]
+      },
+      "compliance_notes": [
+        "Location Restrictions: Must be 500ft from schools, 1000ft from churches",
+        "Security Requirements: 24/7 surveillance, alarm systems, secure storage",
+        "Record Keeping: Maintain detailed records for 5 years",
+        "Employee Training: All staff must complete compliance training",
+        "Annual Renewal: License must be renewed annually",
+        "Penalties: Non-compliance can result in fines and license revocation"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Contact DCCC at 1-800-292-7935",
+            "Review the Business Guide",
+            "Start your business registration process"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Secure a compliant location",
+            "Develop your business plan",
+            "Prepare financial documentation"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Submit your application to DCCC",
+            "Begin staff training programs",
+            "Install security systems"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Complete all compliance training",
+            "Pass final inspection",
+            "Receive final approval from DCCC"
+          ]
+        }
+      ],
+      "pro_tip": "Consider hiring a cannabis compliance consultant to ensure you meet all requirements."
+    },
+    "creative": {
+      "keywords": ["art", "studio", "gallery", "creative", "artist", "painting", "sculpture", "craft", "design", "photography", "music", "dance", "theater", "workshop", "teaching"],
+      "search_query": "creative",
+      "title": "Delaware Creative Business & Art Studio Requirements",
+      "icon": "🎨",
+      "steps": [
+        {
+          "title": "Business Registration & Licensing",
+          "items": [
+            "Register your business with Delaware Division of Corporations",
+            "Obtain a Delaware business license",
+            "Register for sales tax if selling artwork",
+            "Consider forming an LLC for liability protection",
+            "Apply for an Employer Identification Number (EIN)"
+          ]
+        },
+        {
+          "title": "Location & Zoning",
+          "items": [
+            "Check local zoning requirements for art studios",
+            "Ensure adequate space for your art activities",
+            "Verify parking and accessibility requirements",
+            "Consider proximity to art districts and galleries",
+            "Check for any special permits needed for art businesses"
+          ]
+        },
+        {
+          "title": "Insurance & Safety",
+          "items": [
+            "Obtain general liability insurance",
+            "Consider professional liability insurance for art instruction",
+            "Install proper ventilation for art materials",
+            "Set up fire safety equipment",
+            "Create safety protocols for art materials"
+          ]
+        },
+        {
+          "title": "Marketing & Networking",
+          "items": [
+            "Join Delaware Arts Alliance",
+            "Register with Delaware Artist Registry",
+            "Connect with local galleries and art organizations",
+            "Set up social media and website",
+            "Consider participating in local art events"
+          ]
+        },
+        {
+          "title": "Financial Management",
+          "items": [
+            "Set up business bank account",
+            "Implement accounting system for art sales",
+            "Track expenses for tax deductions",
+            "Consider applying for arts grants",
+            "Plan for seasonal income fluctuations"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Delaware Division of the Arts", "url": "https://arts.delaware.gov/"},
+          {"name": "Delaware Creative Economy", "url": "https://choosedelaware.com/creative-economy/"},
+          {"name": "Delaware Arts Alliance", "url": "https://www.delawareartsalliance.org/"},
+          {"name": "Delaware Art Museum", "url": "https://delart.org/"},
+          {"name": "Delaware Contemporary", "url": "https://decontemporary.org/"},
+          {"name": "Delaware Center for the Contemporary Arts", "url": "https://www.thedcca.org/"}
+        ],
+        "support": [
+          {"name": "Delaware Arts Council", "url": "https://arts.delaware.gov/arts-council/"},
+          {"name": "Delaware Arts Grants", "url": "https://arts.delaware.gov/grants/"},
+          {"name": "Delaware Arts Education", "url": "https://arts.delaware.gov/arts-education/"},
+          {"name": "Delaware Artist Registry", "url": "https://arts.delaware.gov/artist-registry/"},
+          {"name": "Delaware Arts Marketing", "url": "https://arts.delaware.gov/marketing/"},
+          {"name": "Delaware Arts Venues", "url": "https://arts.delaware.gov/venues/"}
+        ],
+        "business": [
+          {"name": "Division of the Arts", "url": "tel:302-577-8278", "phone": "302-577-8278"},
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"},
+          {"name": "Delaware Small Business Development Center", "url": "https://www.delawaresbdc.org/"}
+        ]
+      },
+      "compliance_notes": [
+        "Sales Tax: Required for selling artwork in Delaware",
+        "Safety Regulations: Proper ventilation and safety equipment required",
+        "Insurance: General liability and professional liability recommended",
+        "Zoning: Check local ordinances for art studio requirements",
+        "Grants: Available through Delaware Division of the Arts",
+        "Networking: Join local art organizations for support"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Contact Delaware Division of the Arts at 302-577-8278",
+            "Register your business with Division of Corporations",
+            "Join Delaware Arts Alliance for networking"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Secure a suitable location for your studio",
+            "Develop your business plan and pricing strategy",
+            "Set up your accounting and tax systems"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Register with Delaware Artist Registry",
+            "Apply for relevant arts grants",
+            "Set up your studio space and equipment"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Complete all safety and insurance requirements",
+            "Set up your marketing and social media presence",
+            "Plan your first exhibition or workshop"
+          ]
+        }
+      ],
+      "pro_tip": "Consider starting with a home studio while building your client base, then expanding to a commercial space."
+    },
+    "food": {
+      "keywords": ["restaurant", "food", "bakery", "cafe", "catering", "kitchen", "dining"],
+      "search_query": "food",
+      "title": "Delaware Food Business Requirements",
+      "icon": "🍽️",
+      "steps": [
+        {
+          "title": "Business Registration",
+          "items": [
+            "Register your business with Delaware Division of Corporations",
+            "Obtain a Delaware business license",
+            "Register for sales tax",
+            "Apply for an Employer Identification Number (EIN)"
+          ]
+        },
+        {
+          "title": "Health & Safety Requirements",
+          "items": [
+            "Obtain food service license from Delaware Health and Social Services",
+            "Complete food safety training",
+            "Install proper kitchen equipment and ventilation",
+            "Set up food storage and handling procedures",
+            "Implement health and safety protocols"
+          ]
+        },
+        {
+          "title": "Location & Zoning",
+          "items": [
+            "Check local zoning requirements for food businesses",
+            "Ensure adequate kitchen space and equipment",
+            "Verify parking and accessibility requirements",
+            "Check for any special permits needed"
+          ]
+        },
+        {
+          "title": "Insurance & Compliance",
+          "items": [
+            "Obtain general liability insurance",
+            "Consider food service liability insurance",
+            "Set up proper accounting for food sales",
+            "Plan for health inspections and compliance"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Food Service Licenses", "url": "https://dhss.delaware.gov/dhss/dph/hsp/restaurant.html"},
+          {"name": "Health & Social Services", "url": "https://dhss.delaware.gov/"},
+          {"name": "Food Safety", "url": "https://dhss.delaware.gov/dhss/dph/hsp/food.html"}
+        ],
+        "business": [
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"}
+        ]
+      },
+      "compliance_notes": [
+        "Food Service License: Required from Delaware Health and Social Services",
+        "Food Safety Training: Mandatory for all food handlers",
+        "Health Inspections: Regular inspections required",
+        "Sales Tax: Required for food sales in Delaware",
+        "Insurance: Food service liability insurance recommended"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Contact Delaware Health and Social Services",
+            "Register your business with Division of Corporations",
+            "Complete food safety training"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Secure a suitable location",
+            "Develop your business plan",
+            "Set up your kitchen equipment"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Apply for food service license",
+            "Complete health inspection requirements",
+            "Set up your accounting systems"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Pass final health inspection",
+            "Complete all safety requirements",
+            "Set up your marketing presence"
+          ]
+        }
+      ],
+      "pro_tip": "Consider starting with a food truck or catering business to test your concept before opening a full restaurant."
+    },
+    "health": {
+      "keywords": ["health", "medical", "doctor", "nurse", "pharmacy", "clinic", "therapy", "wellness"],
+      "search_query": "health",
+      "title": "Delaware Healthcare Business Requirements",
+      "icon": "🏥",
+      "steps": [
+        {
+          "title": "Professional Licensing",
+          "items": [
+            "Obtain professional license from Delaware Department of State",
+            "Register your business with Delaware Division of Corporations",
+            "Apply for an Employer Identification Number (EIN)",
+            "Consider forming a professional corporation"
+          ]
+        },
+        {
+          "title": "Healthcare Compliance",
+          "items": [
+            "Comply with HIPAA regulations",
+            "Set up secure patient record systems",
+            "Obtain malpractice insurance",
+            "Implement healthcare safety protocols"
+          ]
+        },
+        {
+          "title": "Location & Equipment",
+          "items": [
+            "Check zoning requirements for healthcare facilities",
+            "Ensure ADA compliance",
+            "Set up proper medical equipment",
+            "Implement infection control procedures"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Health Care Licenses", "url": "https://sos.delaware.gov/professional-regulation/health-occupations/"},
+          {"name": "Health & Social Services", "url": "https://dhss.delaware.gov/"},
+          {"name": "Professional Licensing", "url": "https://sos.delaware.gov/professional-regulation/"}
+        ],
+        "business": [
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"}
+        ]
+      },
+      "compliance_notes": [
+        "Professional License: Required from Delaware Department of State",
+        "HIPAA Compliance: Mandatory for patient privacy",
+        "Malpractice Insurance: Required for healthcare professionals",
+        "ADA Compliance: Required for accessibility",
+        "Infection Control: Proper protocols required"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Contact Delaware Department of State",
+            "Register your business with Division of Corporations",
+            "Obtain professional license"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Secure a suitable location",
+            "Set up HIPAA-compliant systems",
+            "Obtain malpractice insurance"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Complete facility setup",
+            "Implement safety protocols",
+            "Set up patient management systems"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Complete all compliance requirements",
+            "Pass facility inspections",
+            "Set up marketing and patient acquisition"
+          ]
+        }
+      ],
+      "pro_tip": "Consider joining professional associations for networking and continuing education opportunities."
+    },
+    "construction": {
+      "keywords": ["construction", "contractor", "building", "renovation", "remodeling", "home improvement"],
+      "search_query": "contractor",
+      "title": "Delaware Construction Business Requirements",
+      "icon": "🏗️",
+      "steps": [
+        {
+          "title": "Contractor Licensing",
+          "items": [
+            "Obtain contractor license from Delaware Department of State",
+            "Register your business with Delaware Division of Corporations",
+            "Apply for an Employer Identification Number (EIN)",
+            "Obtain workers compensation insurance"
+          ]
+        },
+        {
+          "title": "Safety & Compliance",
+          "items": [
+            "Implement workplace safety protocols",
+            "Set up proper insurance coverage",
+            "Comply with building codes and regulations",
+            "Obtain necessary permits for projects"
+          ]
+        },
+        {
+          "title": "Equipment & Operations",
+          "items": [
+            "Set up proper equipment and tools",
+            "Implement quality control procedures",
+            "Set up project management systems",
+            "Plan for seasonal work fluctuations"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Contractor Licenses", "url": "https://sos.delaware.gov/professional-regulation/contractors/"},
+          {"name": "Professional Licensing", "url": "https://sos.delaware.gov/professional-regulation/"},
+          {"name": "Workplace Safety", "url": "https://labor.delaware.gov/workplace-safety/"}
+        ],
+        "business": [
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"}
+        ]
+      },
+      "compliance_notes": [
+        "Contractor License: Required from Delaware Department of State",
+        "Workers Compensation: Mandatory for construction businesses",
+        "Building Permits: Required for construction projects",
+        "Safety Protocols: OSHA compliance required",
+        "Insurance: General liability and workers comp required"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Contact Delaware Department of State",
+            "Register your business with Division of Corporations",
+            "Obtain contractor license"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Set up insurance coverage",
+            "Implement safety protocols",
+            "Set up project management systems"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Complete equipment setup",
+            "Set up accounting systems",
+            "Develop marketing strategy"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Complete all compliance requirements",
+            "Set up client acquisition systems",
+            "Plan for seasonal work management"
+          ]
+        }
+      ],
+      "pro_tip": "Consider specializing in a specific type of construction to differentiate your business."
+    },
+    "retail": {
+      "keywords": ["retail", "store", "shop", "boutique", "gift", "clothing", "electronics"],
+      "search_query": "business",
+      "title": "Delaware Retail Business Requirements",
+      "icon": "🛍️",
+      "steps": [
+        {
+          "title": "Business Registration",
+          "items": [
+            "Register your business with Delaware Division of Corporations",
+            "Obtain a Delaware business license",
+            "Register for sales tax",
+            "Apply for an Employer Identification Number (EIN)"
+          ]
+        },
+        {
+          "title": "Location & Zoning",
+          "items": [
+            "Check local zoning requirements for retail businesses",
+            "Ensure adequate space for your inventory",
+            "Verify parking and accessibility requirements",
+            "Consider foot traffic and visibility"
+          ]
+        },
+        {
+          "title": "Operations & Compliance",
+          "items": [
+            "Set up point-of-sale systems",
+            "Implement inventory management",
+            "Set up accounting and tax systems",
+            "Plan for seasonal inventory management"
+          ]
+        }
+      ],
+      "resources": {
+        "official": [
+          {"name": "Business Licenses", "url": "https://firststeps.delaware.gov/topics/"},
+          {"name": "Sales Tax", "url": "https://revenue.delaware.gov/sales-tax/"},
+          {"name": "Division of Revenue", "url": "https://revenue.delaware.gov/"}
+        ],
+        "business": [
+          {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+          {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"}
+        ]
+      },
+      "compliance_notes": [
+        "Business License: Required from Delaware Division of Corporations",
+        "Sales Tax: Required for retail sales in Delaware",
+        "Zoning: Check local ordinances for retail requirements",
+        "Insurance: General liability insurance recommended",
+        "Inventory Management: Proper systems required"
+      ],
+      "next_steps": [
+        {
+          "timeline": "Immediate Actions",
+          "items": [
+            "Register your business with Division of Corporations",
+            "Set up sales tax registration",
+            "Develop your business plan"
+          ]
+        },
+        {
+          "timeline": "Within 30 Days",
+          "items": [
+            "Secure a suitable location",
+            "Set up accounting systems",
+            "Develop your inventory strategy"
+          ]
+        },
+        {
+          "timeline": "Within 60 Days",
+          "items": [
+            "Set up point-of-sale systems",
+            "Implement inventory management",
+            "Set up your marketing strategy"
+          ]
+        },
+        {
+          "timeline": "Before Opening",
+          "items": [
+            "Complete all compliance requirements",
+            "Set up your store layout",
+            "Plan your grand opening"
+          ]
+        }
+      ],
+      "pro_tip": "Consider starting with an online store to test your concept before opening a physical location."
+    }
+  },
+  "general_resources": {
+    "main": [
+      {"name": "Business First Steps", "url": "https://firststeps.delaware.gov/"},
+      {"name": "Division of Corporations", "url": "https://corp.delaware.gov/"},
+      {"name": "Department of State", "url": "https://sos.delaware.gov/"},
+      {"name": "Small Business Development Center", "url": "https://www.delawaresbdc.org/"}
+    ],
+    "taxes": [
+      {"name": "Division of Revenue", "url": "https://revenue.delaware.gov/"},
+      {"name": "Business Tax Registration", "url": "https://revenue.delaware.gov/business-tax-registration/"},
+      {"name": "Sales Tax", "url": "https://revenue.delaware.gov/sales-tax/"},
+      {"name": "Corporate Income Tax", "url": "https://revenue.delaware.gov/corporate-income-tax/"}
+    ],
+    "employment": [
+      {"name": "Department of Labor", "url": "https://labor.delaware.gov/"},
+      {"name": "Workers Compensation", "url": "https://labor.delaware.gov/workers-compensation/"},
+      {"name": "Unemployment Insurance", "url": "https://labor.delaware.gov/unemployment-insurance/"},
+      {"name": "Workplace Safety", "url": "https://labor.delaware.gov/workplace-safety/"}
+    ],
+    "local": [
+      {"name": "New Castle County", "url": "https://www.nccde.org/"},
+      {"name": "Kent County", "url": "https://www.co.kent.de.us/"},
+      {"name": "Sussex County", "url": "https://www.sussexcountyde.gov/"},
+      {"name": "City of Wilmington", "url": "https://www.wilmingtonde.gov/"},
+      {"name": "City of Dover", "url": "https://www.cityofdover.com/"},
+      {"name": "City of Newark", "url": "https://www.newarkde.gov/"}
+    ],
+    "support": [
+      {"name": "Delaware Economic Development", "url": "https://choosedelaware.com/"},
+      {"name": "Delaware Chamber of Commerce", "url": "https://www.delawarechamber.com/"},
+      {"name": "Delaware SBA", "url": "https://www.sba.gov/offices/district/de/wilmington"},
+      {"name": "Delaware SCORE", "url": "https://delaware.score.org/"}
+    ]
+  }
+} 

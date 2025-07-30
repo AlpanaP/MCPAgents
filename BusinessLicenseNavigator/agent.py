@@ -21,6 +21,14 @@ except ImportError:
     DELAWARE_RAG_AVAILABLE = False
     print("Warning: Delaware RAG tools not available. Install dependencies with: pip install -r requirements.txt")
 
+# Import the generic business handler
+try:
+    from utils.business_handler import BusinessTypeHandler
+    business_handler = BusinessTypeHandler()
+except ImportError:
+    print("Warning: Business type handler not available")
+    business_handler = None
+
 
 def sanitize_input(text: str) -> str:
     """Sanitize user input to prevent injection attacks."""
@@ -135,33 +143,10 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
     try:
         server = DelawareRAGServer()
         
-        # Extract business type from description
-        business_lower = sanitized_description.lower()
-        
-        # Check for cannabis-specific queries
-        is_cannabis_query = any(word in business_lower for word in ['cannabis', 'marijuana', 'weed', 'dispensary', 'pot'])
-        
-        # Check for creative business queries
-        is_creative_query = any(word in business_lower for word in ['art', 'studio', 'gallery', 'creative', 'artist', 'painting', 'sculpture', 'craft', 'design', 'photography', 'music', 'dance', 'theater', 'workshop', 'teaching'])
-        
-        # Determine search query based on business type
-        search_query = ""
-        if is_cannabis_query:
-            search_query = "cannabis"
-        elif is_creative_query:
-            search_query = "creative"
-        elif any(word in business_lower for word in ['restaurant', 'food', 'bakery', 'cafe', 'catering']):
-            search_query = "food"
-        elif any(word in business_lower for word in ['health', 'medical', 'doctor', 'nurse', 'pharmacy']):
-            search_query = "health"
-        elif any(word in business_lower for word in ['consulting', 'professional', 'service']):
-            search_query = "profession"
-        elif any(word in business_lower for word in ['construction', 'contractor', 'building']):
-            search_query = "contractor"
-        elif any(word in business_lower for word in ['retail', 'store', 'shop']):
-            search_query = "business"
-        else:
-            search_query = "business"
+        # Use generic business handler to detect business type
+        business_type = None
+        if business_handler:
+            business_type = business_handler.detect_business_type(sanitized_description)
         
         # Get Delaware license information
         delaware_info = "## 🏛️ Delaware Business License Information\n\n"
@@ -179,214 +164,19 @@ async def get_delaware_license_info(business_description: str) -> Optional[str]:
             delaware_info += "### 🏢 Available License Categories:\n"
             delaware_info += categories_result.content[0].text.split("Source:")[0] + "\n\n"
         
-        # For cannabis queries, add specific compliance information
-        if is_cannabis_query:
-            delaware_info += "## 🌿 Delaware Cannabis Dispensary Requirements\n\n"
-            delaware_info += "### 📋 Step-by-Step Compliance Process:\n\n"
-            
-            delaware_info += "**Step 1: Pre-Application Requirements**\n"
-            delaware_info += "- ✅ Register your business with Delaware Division of Corporations\n"
-            delaware_info += "- ✅ Obtain a Delaware business license\n"
-            delaware_info += "- ✅ Secure a compliant location (500ft from schools, 1000ft from churches)\n"
-            delaware_info += "- ✅ Develop a comprehensive business plan\n"
-            delaware_info += "- ✅ Prepare financial statements and proof of funding\n\n"
-            
-            delaware_info += "**Step 2: Application Process**\n"
-            delaware_info += "- ✅ Submit application to Delaware Cannabis Compliance Commission (DCCC)\n"
-            delaware_info += "- ✅ Pay application fee ($5,000 for dispensary license)\n"
-            delaware_info += "- ✅ Provide detailed security plan\n"
-            delaware_info += "- ✅ Submit employee background check information\n"
-            delaware_info += "- ✅ Provide inventory management system details\n\n"
-            
-            delaware_info += "**Step 3: Facility Requirements**\n"
-            delaware_info += "- ✅ Install security alarm system\n"
-            delaware_info += "- ✅ Set up surveillance cameras (24/7 recording)\n"
-            delaware_info += "- ✅ Implement secure cash handling procedures\n"
-            delaware_info += "- ✅ Create secure product storage areas\n"
-            delaware_info += "- ✅ Install proper lighting and signage\n\n"
-            
-            delaware_info += "**Step 4: Staff Training & Compliance**\n"
-            delaware_info += "- ✅ Complete Delaware cannabis compliance training\n"
-            delaware_info += "- ✅ Train all employees on state regulations\n"
-            delaware_info += "- ✅ Establish record-keeping procedures\n"
-            delaware_info += "- ✅ Set up monitoring and reporting systems\n\n"
-            
-            delaware_info += "**Step 5: Operational Requirements**\n"
-            delaware_info += "- ✅ Maintain detailed sales and inventory records\n"
-            delaware_info += "- ✅ Conduct regular compliance audits\n"
-            delaware_info += "- ✅ Submit required reports to DCCC\n"
-            delaware_info += "- ✅ Renew license annually\n\n"
-            
-            delaware_info += "### 🔗 Essential Delaware Cannabis Resources:\n\n"
-            delaware_info += "**Official Government Resources:**\n"
-            delaware_info += "- 🌿 [Delaware Cannabis Compliance Commission](https://cannabis.delaware.gov/)\n"
-            delaware_info += "- 📋 [Cannabis Licensing Portal](https://cannabis.delaware.gov/licensing/)\n"
-            delaware_info += "- 📖 [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)\n"
-            delaware_info += "- 📝 [Application Portal](https://cannabis.delaware.gov/apply/)\n"
-            delaware_info += "- 📚 [Business Guide](https://cannabis.delaware.gov/business-guide/)\n"
-            delaware_info += "- 🛡️ [Compliance Requirements](https://cannabis.delaware.gov/compliance/)\n"
-            delaware_info += "- 🔒 [Security Requirements](https://cannabis.delaware.gov/security/)\n"
-            delaware_info += "- 🧪 [Testing Requirements](https://cannabis.delaware.gov/testing/)\n\n"
-            
-            delaware_info += "**Legal Framework:**\n"
-            delaware_info += "- ⚖️ [Delaware Marijuana Control Act](https://delcode.delaware.gov/title16/c047/)\n"
-            delaware_info += "- 🏥 [Office of Medical Marijuana](https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html)\n\n"
-            
-            delaware_info += "**Business Support:**\n"
-            delaware_info += "- 📞 **DCCC Helpline**: 1-800-292-7935\n"
-            delaware_info += "- 💼 [Delaware Economic Development](https://choosedelaware.com/)\n"
-            delaware_info += "- 🏢 [Delaware Chamber of Commerce](https://www.delawarechamber.com/)\n\n"
-            
-            delaware_info += "### ⚠️ Important Compliance Notes:\n\n"
-            delaware_info += "- **Location Restrictions**: Must be 500ft from schools, 1000ft from churches\n"
-            delaware_info += "- **Security Requirements**: 24/7 surveillance, alarm systems, secure storage\n"
-            delaware_info += "- **Record Keeping**: Maintain detailed records for 5 years\n"
-            delaware_info += "- **Employee Training**: All staff must complete compliance training\n"
-            delaware_info += "- **Annual Renewal**: License must be renewed annually\n"
-            delaware_info += "- **Penalties**: Non-compliance can result in fines and license revocation\n\n"
-            
-            delaware_info += "### 🎯 Next Steps for Your Cannabis Dispensary:\n\n"
-            delaware_info += "1. **Immediate Actions**:\n"
-            delaware_info += "   - Contact DCCC at 1-800-292-7935\n"
-            delaware_info += "   - Review the [Business Guide](https://cannabis.delaware.gov/business-guide/)\n"
-            delaware_info += "   - Start your business registration process\n\n"
-            
-            delaware_info += "2. **Within 30 Days**:\n"
-            delaware_info += "   - Secure a compliant location\n"
-            delaware_info += "   - Develop your business plan\n"
-            delaware_info += "   - Prepare financial documentation\n\n"
-            
-            delaware_info += "3. **Within 60 Days**:\n"
-            delaware_info += "   - Submit your application to DCCC\n"
-            delaware_info += "   - Begin staff training programs\n"
-            delaware_info += "   - Install security systems\n\n"
-            
-            delaware_info += "4. **Before Opening**:\n"
-            delaware_info += "   - Complete all compliance training\n"
-            delaware_info += "   - Pass final inspection\n"
-            delaware_info += "   - Receive final approval from DCCC\n\n"
-            
-            delaware_info += "**💡 Pro Tip**: Consider hiring a cannabis compliance consultant to ensure you meet all requirements.\n\n"
+        # Generate business-specific guidance using the generic handler
+        if business_type and business_handler:
+            business_guidance = business_handler.generate_business_guidance(business_type, sanitized_description)
+            delaware_info += business_guidance
+        else:
+            # Fallback to general guidance
+            if business_handler:
+                delaware_info += business_handler.generate_business_guidance("general", sanitized_description)
+            else:
+                delaware_info += "## 🏢 Delaware General Business Requirements\n\n"
+                delaware_info += "For specific business type guidance, please contact Delaware Business First Steps.\n\n"
         
-        # For creative business queries, add specific guidance
-        elif is_creative_query:
-            delaware_info += "## 🎨 Delaware Creative Business & Art Studio Requirements\n\n"
-            delaware_info += "### 📋 Step-by-Step Setup Process:\n\n"
-            
-            delaware_info += "**Step 1: Business Registration & Licensing**\n"
-            delaware_info += "- ✅ Register your business with Delaware Division of Corporations\n"
-            delaware_info += "- ✅ Obtain a Delaware business license\n"
-            delaware_info += "- ✅ Register for sales tax if selling artwork\n"
-            delaware_info += "- ✅ Consider forming an LLC for liability protection\n"
-            delaware_info += "- ✅ Apply for an Employer Identification Number (EIN)\n\n"
-            
-            delaware_info += "**Step 2: Location & Zoning**\n"
-            delaware_info += "- ✅ Check local zoning requirements for art studios\n"
-            delaware_info += "- ✅ Ensure adequate space for your art activities\n"
-            delaware_info += "- ✅ Verify parking and accessibility requirements\n"
-            delaware_info += "- ✅ Consider proximity to art districts and galleries\n"
-            delaware_info += "- ✅ Check for any special permits needed for art businesses\n\n"
-            
-            delaware_info += "**Step 3: Insurance & Safety**\n"
-            delaware_info += "- ✅ Obtain general liability insurance\n"
-            delaware_info += "- ✅ Consider professional liability insurance for art instruction\n"
-            delaware_info += "- ✅ Install proper ventilation for art materials\n"
-            delaware_info += "- ✅ Set up fire safety equipment\n"
-            delaware_info += "- ✅ Create safety protocols for art materials\n\n"
-            
-            delaware_info += "**Step 4: Marketing & Networking**\n"
-            delaware_info += "- ✅ Join Delaware Arts Alliance\n"
-            delaware_info += "- ✅ Register with Delaware Artist Registry\n"
-            delaware_info += "- ✅ Connect with local galleries and art organizations\n"
-            delaware_info += "- ✅ Set up social media and website\n"
-            delaware_info += "- ✅ Consider participating in local art events\n\n"
-            
-            delaware_info += "**Step 5: Financial Management**\n"
-            delaware_info += "- ✅ Set up business bank account\n"
-            delaware_info += "- ✅ Implement accounting system for art sales\n"
-            delaware_info += "- ✅ Track expenses for tax deductions\n"
-            delaware_info += "- ✅ Consider applying for arts grants\n"
-            delaware_info += "- ✅ Plan for seasonal income fluctuations\n\n"
-            
-            delaware_info += "### 🔗 Essential Delaware Creative Business Resources:\n\n"
-            delaware_info += "**Official Delaware Arts Resources:**\n"
-            delaware_info += "- 🎨 [Delaware Division of the Arts](https://arts.delaware.gov/)\n"
-            delaware_info += "- 💼 [Delaware Creative Economy](https://choosedelaware.com/creative-economy/)\n"
-            delaware_info += "- 🤝 [Delaware Arts Alliance](https://www.delawareartsalliance.org/)\n"
-            delaware_info += "- 🏛️ [Delaware Art Museum](https://delart.org/)\n"
-            delaware_info += "- 🎭 [Delaware Contemporary](https://decontemporary.org/)\n"
-            delaware_info += "- 🖼️ [Delaware Center for the Contemporary Arts](https://www.thedcca.org/)\n\n"
-            
-            delaware_info += "**Arts Support & Development:**\n"
-            delaware_info += "- 🎨 [Delaware Arts Council](https://arts.delaware.gov/arts-council/)\n"
-            delaware_info += "- 💰 [Delaware Arts Grants](https://arts.delaware.gov/grants/)\n"
-            delaware_info += "- 📚 [Delaware Arts Education](https://arts.delaware.gov/arts-education/)\n"
-            delaware_info += "- 👥 [Delaware Artist Registry](https://arts.delaware.gov/artist-registry/)\n"
-            delaware_info += "- 📢 [Delaware Arts Marketing](https://arts.delaware.gov/marketing/)\n"
-            delaware_info += "- 🏢 [Delaware Arts Venues](https://arts.delaware.gov/venues/)\n\n"
-            
-            delaware_info += "**Business Support:**\n"
-            delaware_info += "- 📞 **Delaware Division of the Arts**: 302-577-8278\n"
-            delaware_info += "- 💼 [Delaware Economic Development](https://choosedelaware.com/)\n"
-            delaware_info += "- 🏢 [Delaware Chamber of Commerce](https://www.delawarechamber.com/)\n"
-            delaware_info += "- 🚀 [Delaware Small Business Development Center](https://www.delawaresbdc.org/)\n\n"
-            
-            delaware_info += "### ⚠️ Important Notes for Art Studios:\n\n"
-            delaware_info += "- **Sales Tax**: Required for selling artwork in Delaware\n"
-            delaware_info += "- **Safety Regulations**: Proper ventilation and safety equipment required\n"
-            delaware_info += "- **Insurance**: General liability and professional liability recommended\n"
-            delaware_info += "- **Zoning**: Check local ordinances for art studio requirements\n"
-            delaware_info += "- **Grants**: Available through Delaware Division of the Arts\n"
-            delaware_info += "- **Networking**: Join local art organizations for support\n\n"
-            
-            delaware_info += "### 🎯 Next Steps for Your Art Studio:\n\n"
-            delaware_info += "1. **Immediate Actions**:\n"
-            delaware_info += "   - Contact Delaware Division of the Arts at 302-577-8278\n"
-            delaware_info += "   - Register your business with Division of Corporations\n"
-            delaware_info += "   - Join Delaware Arts Alliance for networking\n\n"
-            
-            delaware_info += "2. **Within 30 Days**:\n"
-            delaware_info += "   - Secure a suitable location for your studio\n"
-            delaware_info += "   - Develop your business plan and pricing strategy\n"
-            delaware_info += "   - Set up your accounting and tax systems\n\n"
-            
-            delaware_info += "3. **Within 60 Days**:\n"
-            delaware_info += "   - Register with Delaware Artist Registry\n"
-            delaware_info += "   - Apply for relevant arts grants\n"
-            delaware_info += "   - Set up your studio space and equipment\n\n"
-            
-            delaware_info += "4. **Before Opening**:\n"
-            delaware_info += "   - Complete all safety and insurance requirements\n"
-            delaware_info += "   - Set up your marketing and social media presence\n"
-            delaware_info += "   - Plan your first exhibition or workshop\n\n"
-            
-            delaware_info += "**💡 Pro Tip**: Consider starting with a home studio while building your client base, then expanding to a commercial space.\n\n"
-        
-        # Add comprehensive Delaware resources based on business type
-        if any(word in business_lower for word in ['food', 'restaurant', 'bakery', 'cafe', 'catering']):
-            delaware_info += "### 🍽️ Food Business Specific Resources:\n"
-            delaware_info += "- **Food Service Licenses**: https://dhss.delaware.gov/dhss/dph/hsp/restaurant.html\n"
-            delaware_info += "- **Health & Social Services**: https://dhss.delaware.gov/\n"
-            delaware_info += "- **Food Safety**: https://dhss.delaware.gov/dhss/dph/hsp/food.html\n\n"
-        
-        elif any(word in business_lower for word in ['health', 'medical', 'doctor', 'nurse', 'pharmacy']):
-            delaware_info += "### 🏥 Health Care Specific Resources:\n"
-            delaware_info += "- **Health Care Licenses**: https://sos.delaware.gov/professional-regulation/health-occupations/\n"
-            delaware_info += "- **Health & Social Services**: https://dhss.delaware.gov/\n"
-            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n\n"
-        
-        elif any(word in business_lower for word in ['construction', 'contractor', 'building']):
-            delaware_info += "### 🏗️ Construction Specific Resources:\n"
-            delaware_info += "- **Contractor Licenses**: https://sos.delaware.gov/professional-regulation/contractors/\n"
-            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n"
-            delaware_info += "- **Workplace Safety**: https://labor.delaware.gov/workplace-safety/\n\n"
-        
-        elif any(word in business_lower for word in ['real estate', 'realtor', 'property']):
-            delaware_info += "### 🏠 Real Estate Specific Resources:\n"
-            delaware_info += "- **Real Estate Licenses**: https://sos.delaware.gov/professional-regulation/real-estate/\n"
-            delaware_info += "- **Professional Licensing**: https://sos.delaware.gov/professional-regulation/\n\n"
-        
-        # Add tax resources
+        # Add comprehensive Delaware resources
         delaware_info += "### 💰 Delaware Tax Resources:\n"
         delaware_info += "- **Division of Revenue**: https://revenue.delaware.gov/\n"
         delaware_info += "- **Business Tax Registration**: https://revenue.delaware.gov/business-tax-registration/\n"
@@ -533,8 +323,11 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
     # Check if this is a Delaware query
     business_lower = business_description.lower()
     is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
-    is_cannabis_query = any(word in business_lower for word in ['cannabis', 'marijuana', 'weed', 'dispensary', 'pot'])
-    is_creative_query = any(word in business_lower for word in ['art', 'studio', 'gallery', 'creative', 'artist', 'painting', 'sculpture', 'craft', 'design', 'photography', 'music', 'dance', 'theater', 'workshop', 'teaching'])
+    
+    # Use generic business handler to detect business type
+    business_type = None
+    if business_handler:
+        business_type = business_handler.detect_business_type(business_description)
     
     if ai_used:
         sources.append(f"**AI Source**: {ai_used}")
@@ -544,32 +337,10 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
         sources.append("**Vector Database**: Qdrant with semantic search")
         sources.append("**Delaware Government Resources**: [Division of Corporations](https://corp.delaware.gov/), [Department of State](https://sos.delaware.gov/), [Division of Revenue](https://revenue.delaware.gov/)")
         
-        # Add cannabis-specific sources if applicable
-        if is_cannabis_query:
-            sources.append("**Cannabis Compliance**: [Delaware Cannabis Compliance Commission](https://cannabis.delaware.gov/)")
-            sources.append("**Cannabis Licensing**: [Cannabis Licensing Portal](https://cannabis.delaware.gov/licensing/)")
-            sources.append("**Cannabis Regulations**: [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)")
-            sources.append("**Cannabis Application**: [Application Portal](https://cannabis.delaware.gov/apply/)")
-            sources.append("**Cannabis Business Guide**: [Business Guide](https://cannabis.delaware.gov/business-guide/)")
-            sources.append("**Cannabis Compliance**: [Compliance Requirements](https://cannabis.delaware.gov/compliance/)")
-            sources.append("**Cannabis Security**: [Security Requirements](https://cannabis.delaware.gov/security/)")
-            sources.append("**Cannabis Testing**: [Testing Requirements](https://cannabis.delaware.gov/testing/)")
-            sources.append("**Legal Framework**: [Delaware Marijuana Control Act](https://delcode.delaware.gov/title16/c047/)")
-            sources.append("**Medical Marijuana**: [Office of Medical Marijuana](https://dhss.delaware.gov/dhss/dph/hsp/medicalmarijuana.html)")
-        
-        # Add creative business-specific sources if applicable
-        if is_creative_query:
-            sources.append("**Delaware Division of the Arts**: [Delaware Division of the Arts](https://arts.delaware.gov/)")
-            sources.append("**Delaware Creative Economy**: [Creative Economy](https://choosedelaware.com/creative-economy/)")
-            sources.append("**Delaware Arts Alliance**: [Arts Alliance](https://www.delawareartsalliance.org/)")
-            sources.append("**Delaware Art Museum**: [Art Museum](https://delart.org/)")
-            sources.append("**Delaware Contemporary**: [Contemporary Art](https://decontemporary.org/)")
-            sources.append("**Delaware Center for the Contemporary Arts**: [Contemporary Arts Center](https://www.thedcca.org/)")
-            sources.append("**Delaware Arts Council**: [Arts Council](https://arts.delaware.gov/arts-council/)")
-            sources.append("**Delaware Arts Grants**: [Arts Grants](https://arts.delaware.gov/grants/)")
-            sources.append("**Delaware Artist Registry**: [Artist Registry](https://arts.delaware.gov/artist-registry/)")
-            sources.append("**Delaware Arts Marketing**: [Arts Marketing](https://arts.delaware.gov/marketing/)")
-            sources.append("**Delaware Arts Venues**: [Arts Venues](https://arts.delaware.gov/venues/)")
+        # Add business-specific sources using the generic handler
+        if business_type and business_handler:
+            business_sources = business_handler.get_business_sources(business_type)
+            sources.extend(business_sources)
     
     # Detect location from business description
     if is_delaware_query:
@@ -577,13 +348,13 @@ def get_source_attribution(ai_used, delaware_rag_used, business_description):
         sources.append("**State Resources**: Delaware government websites")
         sources.append("**Delaware Specific Links**: [Business First Steps](https://firststeps.delaware.gov/), [Professional Licensing](https://sos.delaware.gov/professional-regulation/), [Tax Registration](https://revenue.delaware.gov/business-tax-registration/)")
         
-        if is_cannabis_query:
-            sources.append("**Delaware Cannabis Resources**: [Cannabis Compliance Commission](https://cannabis.delaware.gov/), [Cannabis Licensing](https://cannabis.delaware.gov/licensing/), [Cannabis Regulations](https://cannabis.delaware.gov/regulations/)")
-            sources.append("**Delaware Cannabis Support**: DCCC Helpline 1-800-292-7935")
-        
-        if is_creative_query:
-            sources.append("**Delaware Creative Resources**: [Division of the Arts](https://arts.delaware.gov/), [Creative Economy](https://choosedelaware.com/creative-economy/), [Arts Alliance](https://www.delawareartsalliance.org/)")
-            sources.append("**Delaware Creative Support**: Division of the Arts 302-577-8278")
+        # Add business-specific Delaware resources
+        if business_type and business_handler:
+            config = business_handler.get_business_config(business_type)
+            if config:
+                title = config.get("title", "Business Requirements")
+                icon = config.get("icon", "🏢")
+                sources.append(f"**Delaware {title}**: {icon} {title}")
     
     elif any(word in business_lower for word in ['texas', 'tx']):
         location_info = "**Location**: Texas"
