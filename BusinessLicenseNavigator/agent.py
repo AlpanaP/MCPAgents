@@ -3,9 +3,21 @@ import json
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+import asyncio
+import sys
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Add the parent directory to the path so we can import Delaware RAG tools
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    from delaware_rag_server import DelawareRAGServer
+    DELAWARE_RAG_AVAILABLE = True
+except ImportError:
+    DELAWARE_RAG_AVAILABLE = False
+    print("Warning: Delaware RAG tools not available. Install dependencies with: pip install -r requirements.txt")
 
 
 def call_gemini(prompt, api_key):
@@ -44,6 +56,76 @@ def call_ollama(model, prompt):
         return "ERROR: Ollama request timed out. Please check if the server is running properly."
     except Exception as e:
         return f"ERROR: {str(e)}"
+
+
+async def get_delaware_license_info(business_description):
+    """Get Delaware-specific license information using RAG tools"""
+    if not DELAWARE_RAG_AVAILABLE:
+        return None
+    
+    try:
+        server = DelawareRAGServer()
+        
+        # Extract business type from description
+        business_lower = business_description.lower()
+        
+        # Determine search query based on business type
+        search_query = ""
+        if any(word in business_lower for word in ['restaurant', 'food', 'bakery', 'cafe', 'catering']):
+            search_query = "food"
+        elif any(word in business_lower for word in ['health', 'medical', 'doctor', 'nurse', 'pharmacy']):
+            search_query = "health"
+        elif any(word in business_lower for word in ['consulting', 'professional', 'service']):
+            search_query = "profession"
+        elif any(word in business_lower for word in ['construction', 'contractor', 'building']):
+            search_query = "contractor"
+        elif any(word in business_lower for word in ['retail', 'store', 'shop']):
+            search_query = "business"
+        else:
+            search_query = "business"
+        
+        # Get Delaware license information
+        delaware_info = "## 🏛️ Delaware Business License Information\n\n"
+        delaware_info += "**Source**: [Delaware Business First Steps](https://firststeps.delaware.gov/topics/)\n\n"
+        
+        # Get business steps
+        steps_result = await server._get_business_steps()
+        if steps_result and not steps_result.content[0].text.startswith("Error"):
+            delaware_info += "### 📋 Delaware Business Steps:\n"
+            delaware_info += steps_result.content[0].text.split("Source:")[0] + "\n\n"
+        
+        # Get license categories
+        categories_result = await server._get_license_categories()
+        if categories_result and not categories_result.content[0].text.startswith("Error"):
+            delaware_info += "### 🏢 Available License Categories:\n"
+            categories_text = categories_result.content[0].text
+            # Extract categories list
+            if "Available Categories:" in categories_text:
+                categories_section = categories_text.split("Available Categories:")[1]
+                delaware_info += categories_section + "\n\n"
+        
+        # Get specific license information using RAG search
+        if search_query:
+            search_result = await server._search_licenses_rag({"query": search_query, "top_k": 5})
+            if search_result and not search_result.content[0].text.startswith("Error"):
+                delaware_info += f"### 🔍 Relevant Delaware Licenses for '{search_query}':\n"
+                search_text = search_result.content[0].text
+                # Extract search results
+                if "Found" in search_text and "relevant license types:" in search_text:
+                    results_section = search_text.split("relevant license types:")[1].split("For more detailed information")[0]
+                    delaware_info += results_section + "\n\n"
+        
+        delaware_info += "### 📞 Delaware Resources:\n"
+        delaware_info += "- **Delaware Business First Steps**: https://firststeps.delaware.gov/\n"
+        delaware_info += "- **Delaware Division of Corporations**: https://corp.delaware.gov/\n"
+        delaware_info += "- **Delaware Small Business Development Center**: https://www.delawaresbdc.org/\n"
+        delaware_info += "- **Delaware Department of State**: https://sos.delaware.gov/\n\n"
+        
+        return delaware_info
+        
+    except Exception as e:
+        print(f"Error getting Delaware license info: {e}")
+        return None
 
 
 def get_fallback_response(business_description):
@@ -147,8 +229,12 @@ def get_fallback_response(business_description):
     return guidance
 
 
-def run_agent(user_input):
-    """Run the business license navigator agent"""
+async def run_agent_async(user_input):
+    """Run the business license navigator agent with Delaware RAG integration"""
+    
+    # Check if this is a Delaware-specific query
+    business_lower = user_input.lower()
+    is_delaware_query = any(word in business_lower for word in ['delaware', 'de', 'first state'])
     
     # Create a prompt for business license guidance
     prompt = f"""
@@ -167,23 +253,52 @@ def run_agent(user_input):
     
     # Try Gemini API first
     api_key = os.getenv('GEMINI_API_KEY')
+    ai_response = None
+    
     if api_key:
-        response = call_gemini(prompt, api_key)
-        if not response.startswith("ERROR:"):
-            return response
+        ai_response = call_gemini(prompt, api_key)
+        if ai_response.startswith("ERROR:"):
+            ai_response = None
     
-    # Try Ollama as fallback
-    response = call_ollama("llama3.1:8b", prompt)
-    if not response.startswith("ERROR:"):
-        return response
+    # Try Ollama as fallback if Gemini failed
+    if not ai_response:
+        ollama_response = call_ollama("llama3.1:8b", prompt)
+        if not ollama_response.startswith("ERROR:"):
+            ai_response = ollama_response
     
-    # Use fallback guidance if no AI is available
-    return get_fallback_response(user_input)
+    # Combine AI response with Delaware-specific information
+    final_response = ""
+    
+    if ai_response:
+        final_response += "## 🤖 AI-Powered Business License Guidance\n\n"
+        final_response += ai_response + "\n\n"
+    
+    # Add Delaware-specific information if available and relevant
+    if is_delaware_query or DELAWARE_RAG_AVAILABLE:
+        delaware_info = await get_delaware_license_info(user_input)
+        if delaware_info:
+            final_response += delaware_info
+    
+    # If no AI response, use fallback
+    if not ai_response:
+        final_response += "## 📋 General Business License Guidance\n\n"
+        final_response += get_fallback_response(user_input)
+    
+    return final_response
+
+
+def run_agent(user_input):
+    """Synchronous wrapper for the async agent"""
+    try:
+        return asyncio.run(run_agent_async(user_input))
+    except Exception as e:
+        print(f"Error in agent: {e}")
+        return get_fallback_response(user_input)
 
 
 if __name__ == "__main__":
     # Test the agent
-    test_input = "I run a home bakery in Austin, TX"
+    test_input = "I run a home bakery in Delaware"
     result = run_agent(test_input)
     print("Test result:")
     print(result) 
