@@ -181,7 +181,7 @@ TestEndPoints/
 ├── mcp_servers.py            # MCP server implementation
 ├── test_mcp_gemini.py        # MCP + Gemini integration test
 ├── mcp_config.json           # MCP server configuration
-├── .env                      # Environment variables (create this)
+├── requirements.txt           # Dependency management
 ├── pyproject.toml           # Project configuration
 └── README.md                # This file
 ```
@@ -248,11 +248,20 @@ The system includes robust error handling for:
 
 ### Virtual Environment Issues
 
-If the virtual environment doesn't have pip:
+**Important:** If you encounter import errors with the virtual environment, try using the system Python instead:
+
 ```bash
+# Deactivate virtual environment
 deactivate
+
+# Run scripts with system Python
+python test_gemini_simple.py
 python callGeminiAPI.py
+python mcp_servers.py
+python test_mcp_gemini.py
 ```
+
+**Why this happens:** The virtual environment may have dependency conflicts or missing packages. The system Python installation typically has all required packages available.
 
 ### MCP Server Issues
 
@@ -261,6 +270,26 @@ If MCP servers fail to connect:
 2. Verify network connectivity
 3. Check server configurations
 4. Try the Python-based implementation in `mcp_servers.py`
+
+### Quick Fix for Import Errors
+
+If you get import errors like `ModuleNotFoundError: No module named 'cryptography'` or `ModuleNotFoundError: No module named 'pyasn1'`:
+
+1. **Use system Python:**
+   ```bash
+   deactivate
+   python test_gemini_simple.py
+   ```
+
+2. **Or reinstall packages in virtual environment:**
+   ```bash
+   pip install --force-reinstall google-generativeai python-dotenv cryptography pyasn1 --break-system-packages
+   ```
+
+3. **Or install missing dependencies:**
+   ```bash
+   pip install cryptography pyasn1 --break-system-packages
+   ```
 
 ## License
 
