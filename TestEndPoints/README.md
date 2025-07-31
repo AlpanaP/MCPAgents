@@ -27,7 +27,7 @@ A testing environment for various API endpoints, including Google's Gemini API w
 
 2. **Install Python dependencies:**
    ```bash
-   pip install -r requirements.txt --break-system-packages
+   pip install -e . --break-system-packages
    ```
    
    Or install individually:
@@ -181,8 +181,7 @@ TestEndPoints/
 ├── mcp_servers.py            # MCP server implementation
 ├── test_mcp_gemini.py        # MCP + Gemini integration test
 ├── mcp_config.json           # MCP server configuration
-├── requirements.txt           # Dependency management
-├── pyproject.toml           # Project configuration
+├── pyproject.toml           # Project configuration and dependencies
 └── README.md                # This file
 ```
 
