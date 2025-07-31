@@ -52,4 +52,11 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Virtual environment files (but allow project files)
+**/bin/
+**/lib/
+**/pyvenv.cfg
+**/CACHEDIR.TAG
+**/.python-version 
