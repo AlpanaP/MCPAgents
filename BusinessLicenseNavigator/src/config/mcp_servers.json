@@ -1,0 +1,215 @@
+{
+  "servers": {
+    "delaware_license_server": {
+      "name": "Delaware License Server",
+      "description": "MCP server for Delaware business license information",
+      "module": "servers.delaware.delaware_mcp_server",
+      "class": "DelawareLicenseServer",
+      "config": {
+        "server_name": "Delaware License Server",
+        "server_description": "Provides Delaware-specific business license information and tools",
+        "tools": [
+          {
+            "name": "get_delaware_license_categories",
+            "description": "Get available Delaware license categories",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          {
+            "name": "search_delaware_licenses",
+            "description": "Search for Delaware licenses by keyword",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "Search query for licenses"
+                }
+              },
+              "required": ["query"]
+            }
+          },
+          {
+            "name": "get_delaware_business_steps",
+            "description": "Get Delaware business setup steps",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          {
+            "name": "get_delaware_license_details",
+            "description": "Get detailed information about a specific license category",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string",
+                  "description": "License category (e.g., food, construction, cannabis)"
+                }
+              },
+              "required": ["category"]
+            }
+          }
+        ]
+      }
+    },
+    "florida_license_server": {
+      "name": "Florida License Server",
+      "description": "MCP server for Florida business license information",
+      "module": "servers.florida.florida_mcp_server",
+      "class": "FloridaLicenseServer",
+      "config": {
+        "server_name": "Florida License Server",
+        "server_description": "Provides Florida-specific business license information and tools",
+        "tools": [
+          {
+            "name": "get_florida_license_categories",
+            "description": "Get available Florida license categories",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          {
+            "name": "search_florida_licenses",
+            "description": "Search for Florida licenses by keyword",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "Search query for licenses"
+                }
+              },
+              "required": ["query"]
+            }
+          },
+          {
+            "name": "get_florida_business_steps",
+            "description": "Get Florida business setup steps",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          {
+            "name": "get_florida_construction_requirements",
+            "description": "Get specific construction requirements for Florida",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          {
+            "name": "get_palm_harbor_requirements",
+            "description": "Get local requirements for Palm Harbor area",
+            "input_schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        ]
+      }
+    },
+    "generic_license_server": {
+      "name": "Generic License Server",
+      "description": "Generic MCP server for any state/province business license information",
+      "module": "servers.generic.generic_mcp_server",
+      "class": "GenericLicenseServer",
+      "config": {
+        "server_name": "Generic License Server",
+        "server_description": "Provides generic business license information for any state/province",
+        "tools": [
+          {
+            "name": "get_license_summary",
+            "description": "Get a structured summary of licenses needed for a business type in a specific location",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "business_type": {
+                  "type": "string",
+                  "description": "The type of business (e.g., construction, restaurant, real estate)"
+                },
+                "location": {
+                  "type": "string",
+                  "description": "The location (state/province and city)"
+                }
+              },
+              "required": ["business_type", "location"]
+            }
+          },
+          {
+            "name": "get_license_requirements",
+            "description": "Get detailed requirements for a specific license type",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "license_type": {
+                  "type": "string",
+                  "description": "The specific license type"
+                },
+                "state": {
+                  "type": "string",
+                  "description": "The state or province"
+                }
+              },
+              "required": ["license_type", "state"]
+            }
+          },
+          {
+            "name": "get_application_sequence",
+            "description": "Get the step-by-step application sequence for business licensing",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "business_type": {
+                  "type": "string",
+                  "description": "The type of business"
+                },
+                "state": {
+                  "type": "string",
+                  "description": "The state or province"
+                }
+              },
+              "required": ["business_type", "state"]
+            }
+          },
+          {
+            "name": "get_additional_comments",
+            "description": "Get additional important information and comments for business licensing",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "business_type": {
+                  "type": "string",
+                  "description": "The type of business"
+                },
+                "state": {
+                  "type": "string",
+                  "description": "The state or province"
+                }
+              },
+              "required": ["business_type", "state"]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "default_server": "generic_license_server",
+  "server_groups": {
+    "delaware": ["delaware_license_server"],
+    "florida": ["florida_license_server"],
+    "generic": ["generic_license_server"],
+    "all": ["delaware_license_server", "florida_license_server", "generic_license_server"]
+  }
+} 

@@ -1,11 +1,12 @@
-"""Test suite for Business License Navigator."""
+"""
+BusinessLicenseNavigator - Tests Package
 
-from .test_integration import run_integration_tests
-from .test_delaware_rag import test_delaware_rag
-from .test_delaware_mcp import test_delaware_mcp
+This package contains all the test files for the BusinessLicenseNavigator application.
+"""
+
+# Import test modules for easy access
+from .test_state_structure import test_state_structure
 
 __all__ = [
-    'run_integration_tests',
-    'test_delaware_rag', 
-    'test_delaware_mcp'
+    "test_state_structure"
 ] 

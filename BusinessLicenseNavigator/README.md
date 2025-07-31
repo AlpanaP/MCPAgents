@@ -1,153 +1,255 @@
-# Business License Navigator
+# 🚀 BusinessLicenseNavigator
 
-A comprehensive AI-powered business license guidance system with Delaware RAG (Retrieval-Augmented Generation) integration.
+**AI-powered business license guidance system with MCP integration**
+
+A modern, scalable system that provides intelligent business license guidance across multiple states and provinces using advanced AI, semantic search, and Model Context Protocol (MCP) integration.
+
+## ✨ Features
+
+### 🤖 **Intelligent AI System**
+- **Semantic Search**: Advanced natural language processing to understand business queries
+- **Multi-State Support**: Delaware, Florida, and generic state handling
+- **MCP Integration**: Model Context Protocol for enhanced capabilities
+- **Chat Interface**: Interactive conversation with history and context
+
+### 🏛️ **State-Specific Guidance**
+- **Delaware (DE)**: Comprehensive financial services and business licensing
+- **Florida (FL)**: Food service, education, and franchise licensing
+- **Generic States**: AI-powered reasoning for other states/provinces
+
+### 🔧 **Technical Capabilities**
+- **Browser Automation**: Playwright for web scraping and data retrieval
+- **Fetch Integration**: Real-time data from official state websites
+- **Vector Database**: Qdrant for semantic search and retrieval
+- **Modern Architecture**: Clean, modular, and scalable design
 
 ## 🏗️ Project Structure
 
 ```
 BusinessLicenseNavigator/
-├── agent.py                 # Main AI agent with Delaware RAG integration
-├── streamlit_app.py         # Streamlit web application
-├── setup_qdrant.py          # Qdrant vector database setup script
-├── requirements.txt          # Python dependencies
-├── pyproject.toml           # Project configuration
-├── README.md               # This file
-├── delaware_rag/           # Delaware RAG package
-│   ├── __init__.py
-│   ├── delaware_rag_server.py    # RAG-enhanced MCP server
-│   └── delaware_mcp_server.py    # Basic MCP server
-├── tests/                  # Test suite
-│   ├── __init__.py
-│   ├── test_delaware_rag.py     # RAG functionality tests
-│   └── test_delaware_mcp.py     # MCP functionality tests
-├── docs/                   # Documentation
-│   ├── DELAWARE_RAG_README.md   # Delaware RAG documentation
-│   └── DELAWARE_MCP_README.md   # Delaware MCP documentation
-├── config/                 # Configuration files
-│   ├── license_sources.json     # License sources configuration
-│   └── delaware_mcp.json        # MCP server configuration
-└── ui/                     # UI components
-    └── app.py              # Legacy UI (deprecated)
+├── 📁 src/                     # Source code
+│   ├── 📁 core/               # Core business logic
+│   │   ├── ai_services.py     # AI service integrations
+│   │   ├── config_manager.py  # Configuration management
+│   │   ├── intelligent_semantic_search.py  # Semantic search engine
+│   │   ├── monitoring.py      # System monitoring
+│   │   ├── prompt_builder.py  # Dynamic prompt construction
+│   │   ├── factories/         # Factory patterns
+│   │   ├── handlers/          # Request handlers
+│   │   └── models/            # Data models
+│   ├── 📁 servers/            # State-specific servers
+│   │   ├── delaware/         # Delaware RAG & MCP servers
+│   │   ├── florida/          # Florida RAG & MCP servers
+│   │   ├── generic/          # Generic RAG & MCP servers
+│   │   └── template/         # Template for new states
+│   ├── 📁 config/             # Configuration files
+│   │   ├── app_config.json    # Application configuration
+│   │   ├── states.json        # State-specific data
+│   │   ├── mcp_servers.json   # MCP server configuration
+│   │   ├── rag_servers.json   # RAG server configuration
+│   │   ├── business_types.json # Business type mappings
+│   │   ├── license_sources.json # License sources
+│   │   └── mcp_config.json    # MCP configuration
+│   ├── chat_interface.py      # Interactive chat interface
+│   ├── enhanced_agent.py      # Enhanced AI agent
+│   └── add_new_state.py       # State addition utility
+├── 📁 tests/                   # Test files
+│   └── test_state_structure.py # Structure testing utility
+├── 📁 markdowns/               # Documentation
+│   ├── README.md              # Documentation index
+│   ├── ARCHITECTURE.md        # Technical architecture
+│   └── MCP_INTEGRATION_SUMMARY.md  # MCP integration guide
+├── 📄 main.py                  # Application entry point
+├── 📄 Makefile                 # Development tasks and automation
+├── 📄 pyproject.toml          # Project dependencies
+└── 📄 README.md               # This file
 ```
 
-## 🚀 Features
+## 🚀 Quick Start
 
-### **AI-Powered Guidance**
-- **Gemini AI**: Google's AI for cloud deployment
-- **Ollama**: Local AI for privacy-focused users
-- **Fallback Mode**: Rule-based guidance when AI unavailable
-
-### **Delaware RAG Integration**
-- **Semantic Search**: AI-powered license search
-- **Similarity Matching**: Find related license types
-- **Vector Database**: Qdrant for efficient retrieval
-- **Official Data**: Delaware Business First Steps integration
-
-### **Source Attribution**
-- **Location Detection**: Automatic state/province detection
-- **Transparency**: Clear source attribution for all responses
-- **State-Specific Links**: Relevant government resources
-
-## 🛠️ Setup
-
-### **1. Install Dependencies**
+### 1. **Install Dependencies**
 ```bash
-cd BusinessLicenseNavigator
-pip install -r requirements.txt
+# Install with development tools
+make install-dev
+
+# Or install core dependencies only
+make install
 ```
 
-### **2. Setup Qdrant Vector Database**
+### 2. **Configure Environment**
 ```bash
-python setup_qdrant.py
+# Create .env file
+cp .env.example .env
+
+# Add your API keys
+echo "GOOGLE_API_KEY=your_gemini_api_key" >> .env
+echo "GROQ_API_KEY=your_groq_api_key" >> .env
 ```
 
-### **3. Test Delaware RAG Tools**
+### 3. **Run the Application**
 ```bash
-python tests/test_delaware_rag.py
+# Start chat interface
+make run
+
+# Or run web interface (if available)
+make run-web
 ```
 
-### **4. Run the Application**
+## 💬 Usage Examples
+
+### **Chat Interface**
 ```bash
-streamlit run streamlit_app.py
+python main.py
 ```
+
+**Example Queries:**
+- "I want to open an ice cream store in Florida"
+- "What licenses do I need for a financial services firm in Delaware?"
+- "How do I start a restaurant in California?"
+- "What are the requirements for a construction company in Texas?"
+
+### **Commands**
+- `exit` - Quit the application
+- `clear` - Clear conversation history
+- `history` - Show conversation history
+- `servers` - List available MCP servers
+- `help` - Show available commands
+
+## 🔧 Development Tools
+
+### **Makefile Commands**
+The project includes a comprehensive Makefile for common development tasks:
+
+```bash
+make help          # Show all available commands
+make install-dev   # Install development dependencies
+make run           # Run the chat interface
+make test          # Run all tests
+make quality       # Run all code quality checks
+make clean         # Clean build artifacts
+make info          # Show project information
+```
+
+### **Adding New States**
+```bash
+make add-state STATE=CA NAME="California"
+```
+
+### **MCP Server Setup**
+1. Install MCP servers:
+   ```bash
+   npm install -g @playwright/mcp
+   uvx install mcp-server-fetch
+   ```
+
+2. Configure in `mcp_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "playwright": {
+         "command": "npx",
+         "args": ["@playwright/mcp@latest"]
+       },
+       "fetch": {
+         "command": "uvx",
+         "args": ["mcp-server-fetch"]
+       }
+     }
+   }
+   ```
 
 ## 🧪 Testing
 
-### **Run All Tests**
+### **Run Tests**
 ```bash
-python -m pytest tests/
+# Run all tests
+make test
+
+# Run with coverage
+make test-coverage
 ```
 
-### **Test Delaware RAG**
+### **Code Quality**
 ```bash
-python tests/test_delaware_rag.py
+# Run all quality checks
+make quality
+
+# Or run individually:
+make format    # Format code
+make lint      # Lint code
+make type-check # Type checking
 ```
 
-### **Test Delaware MCP**
+## 📊 Architecture
+
+### **Core Components**
+1. **Enhanced Agent**: Orchestrates AI interactions and MCP calls
+2. **Intelligent Semantic Search**: Maps queries to business types and licenses
+3. **Chat Interface**: Provides interactive user experience
+4. **Server Factory**: Dynamically creates state-specific servers
+5. **Configuration Manager**: Centralized configuration management
+
+### **Data Flow**
+```
+User Query → Chat Interface → Enhanced Agent → Semantic Search → MCP/RAG → Response
+```
+
+## 🔒 Security
+
+- **Input Sanitization**: All user inputs are sanitized
+- **API Key Management**: Secure environment variable handling
+- **Rate Limiting**: Built-in protection against abuse
+- **Error Handling**: Comprehensive error management
+
+## 🚀 Deployment
+
+### **Local Development**
 ```bash
-python tests/test_delaware_mcp.py
+# Install dependencies
+pip install -e ".[dev]"
+
+# Run application
+python main.py
 ```
 
-## 📚 Documentation
-
-- **Delaware RAG**: See `docs/DELAWARE_RAG_README.md`
-- **Delaware MCP**: See `docs/DELAWARE_MCP_README.md`
-- **Configuration**: See `config/license_sources.json`
-
-## 🎯 Usage Examples
-
-### **Delaware Queries**
-```
-"I run a home bakery in Delaware"
-"Restaurant business in DE"
-"Consulting services in Delaware"
-```
-
-### **Other State Queries**
-```
-"Online business in Texas"
-"Food truck in California"
-"Consulting in New York"
-```
-
-## 🔧 Configuration
-
-### **Environment Variables**
+### **Production**
 ```bash
-export GEMINI_API_KEY=your_gemini_api_key_here
+# Install production dependencies
+pip install -e .
+
+# Set environment variables
+export GOOGLE_API_KEY=your_key
+export GROQ_API_KEY=your_key
+
+# Run application
+python main.py
 ```
-
-### **Qdrant Configuration**
-- **Host**: localhost
-- **Port**: 6333
-- **Collection**: delaware_licenses
-- **Vector Size**: 384 (all-MiniLM-L6-v2)
-
-## 📊 Response Sources
-
-The system automatically detects location and provides appropriate sources:
-
-- **Delaware**: Official Delaware Business First Steps + RAG
-- **Texas**: Texas Secretary of State resources
-- **California**: California Secretary of State resources
-- **New York**: New York Department of State resources
-- **Florida**: Florida Department of State resources
-- **General**: SBA and local authority resources
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/new-state`
+3. **Make your changes**
+4. **Run tests**: `pytest`
+5. **Format code**: `black .`
+6. **Submit a pull request**
 
-## 📄 License
+## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 📞 Support
+## 📚 Documentation
 
-- **Delaware Business First Steps**: 1-800-292-7935
-- **Local SBA Office**: Contact your local Small Business Administration
-- **Documentation**: See `docs/` directory for detailed guides
+- **Main Documentation**: See [markdowns/README.md](markdowns/README.md) for comprehensive guides
+- **Architecture**: [markdowns/ARCHITECTURE.md](markdowns/ARCHITECTURE.md) for technical details
+- **MCP Integration**: [markdowns/MCP_INTEGRATION_SUMMARY.md](markdowns/MCP_INTEGRATION_SUMMARY.md) for integration details
+
+## 🆘 Support
+
+- **Issues**: Create an issue on GitHub
+- **Documentation**: Check the [markdowns/](markdowns/) directory for technical details
+- **Questions**: Open a discussion on GitHub
+
+---
+
+**Built with ❤️ using modern Python, AI, and MCP technologies**

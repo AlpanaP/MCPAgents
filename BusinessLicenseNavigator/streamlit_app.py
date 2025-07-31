@@ -1,275 +1,325 @@
-# streamlit_app.py - Main app for Streamlit Cloud deployment
+#!/usr/bin/env python3
+"""
+Streamlit Web Interface for Business License Navigator
+
+A modern web interface for testing the AI-powered business license guidance system.
+"""
+
 import streamlit as st
-import os
+import asyncio
 import sys
-import re
-from typing import Optional
+from pathlib import Path
+import json
+from datetime import datetime
 
-# Add the current directory to the path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the project root to the path
+project_root = Path(__file__).parent
+sys.path.append(str(project_root))
 
-def sanitize_input(text: str) -> str:
-    """Sanitize user input to prevent injection attacks."""
-    if not text or not isinstance(text, str):
-        return ""
-    
-    # Remove potentially dangerous characters
-    text = re.sub(r'[<>"\']', '', text)
-    # Limit length to prevent DoS
-    return text[:1000].strip()
+from src.chat_interface import BusinessLicenseChat
+from src.core.intelligent_semantic_search import intelligent_semantic_search
 
-def validate_api_key(api_key: str) -> bool:
-    """Validate API key format."""
-    if not api_key or not isinstance(api_key, str):
-        return False
-    
-    # Basic validation for Gemini API key format
-    if api_key.startswith('AI') and len(api_key) > 20:
-        return True
-    
-    return False
 
-try:
-    from agent import run_agent, DELAWARE_RAG_AVAILABLE
-except ImportError as e:
-    st.error(f"Import error: {e}")
-    st.info("Please ensure all dependencies are installed")
-    
-    def run_agent(user_input: str) -> str:
-        return "Error: Dependencies not available. Please check the requirements.txt file."
-    
-    DELAWARE_RAG_AVAILABLE = False
+def init_session_state():
+    """Initialize session state variables."""
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    if 'chat_interface' not in st.session_state:
+        st.session_state.chat_interface = None
 
-st.set_page_config(
-    page_title="Business License Navigator",
-    page_icon="🏢",
-    layout="wide"
-)
 
-st.title("🏢 Business License Navigator")
+def setup_page():
+    """Setup the Streamlit page configuration."""
+    st.set_page_config(
+        page_title="Business License Navigator",
+        page_icon="🏢",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    st.title("🏢 Business License Navigator")
+    st.markdown("AI-powered business license guidance system with MCP integration")
+    st.markdown("---")
 
-st.markdown("""
-This app helps you navigate business license requirements using AI-powered guidance. 
-Enter a brief description of your business and where it's located.
-""")
 
-# Add info about AI options
-with st.expander("ℹ️ About this app"):
-    st.markdown("""
-    **AI Options:**
-    
-    **1. Gemini AI (Recommended for Cloud):**
-    - Set your Gemini API key below
-    - Works in cloud deployment
-    - Powered by Google's Gemini 1.5 Flash
-    
-    **2. Local Ollama:**
-    - Install Ollama: `brew install ollama` (macOS) or `curl -fsSL https://ollama.ai/install.sh | sh` (Linux)
-    - Pull model: `ollama pull llama3.1:8b`
-    - Start server: `ollama serve`
-    - Works locally only
-    
-    **3. Delaware RAG Integration:**
-    - **NEW**: Delaware-specific license information using RAG
-    - Vector database with Qdrant for semantic search
-    - Official Delaware Business First Steps data
-    - Available for Delaware-related queries
-    
-    **4. Fallback Mode:**
-    - No AI required
-    - Provides general guidance based on business type
-    - Always verify with local authorities
-    """)
-
-# Delaware RAG Status
-with st.expander("🏛️ Delaware RAG Status"):
-    if DELAWARE_RAG_AVAILABLE:
-        st.success("✅ Delaware RAG Integration Active")
-        st.markdown("""
-        **Delaware RAG Features:**
-        - 🎯 **Semantic Search**: Find relevant licenses using AI
-        - 🔍 **Similarity Matching**: Discover related license types
-        - 📋 **Business Steps**: Official Delaware 4-step process
-        - 🏢 **License Categories**: All Delaware license categories
-        - 📊 **Relevance Scoring**: AI-powered result ranking
+def create_sidebar():
+    """Create the sidebar with configuration options."""
+    with st.sidebar:
+        st.header("⚙️ Configuration")
         
-        **How to use:**
-        - Include "Delaware" or "DE" in your query
-        - Or just describe your business - RAG will enhance results
-        - Get official Delaware Business First Steps information
-        """)
-    else:
-        st.warning("⚠️ Delaware RAG Integration Not Available")
-        st.markdown("""
-        **To enable Delaware RAG:**
-        1. Install dependencies: `pip install -r requirements.txt`
-        2. Setup Qdrant: `python setup_qdrant.py`
-        3. Test RAG tools: `python tests/test_delaware_rag.py`
+        # API Key Configuration
+        st.subheader("🔑 API Keys")
         
-        **Benefits of Delaware RAG:**
-        - Official Delaware government data
-        - Semantic understanding of business types
-        - Similarity matching for related licenses
-        - Relevance scoring for better results
+        # Load API key from environment
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        
+        if gemini_api_key:
+            st.success("✅ GEMINI_API_KEY loaded from .env file")
+            # Set the API key in environment for the app to use
+            os.environ["GEMINI_API_KEY"] = gemini_api_key
+        else:
+            st.warning("⚠️ GEMINI_API_KEY not found in .env file")
+        
+        # Show API key status (masked)
+        if gemini_api_key:
+            masked_key = gemini_api_key[:8] + "..." + gemini_api_key[-4:] if len(gemini_api_key) > 12 else "***"
+            st.info(f"API Key: {masked_key}")
+        else:
+            st.error("No API key available")
+        
+        # Test Queries
+        st.subheader("🧪 Test Queries")
+        test_queries = [
+            "I want to open an ice cream franchise in FL for Rita's",
+            "What licenses do I need for a financial services firm in Delaware?",
+            "How do I start a restaurant in California?",
+            "What are the requirements for a construction company in Texas?"
+        ]
+        
+        selected_query = st.selectbox(
+            "Choose a test query:",
+            test_queries,
+            index=0
+        )
+        
+        if st.button("🚀 Use Test Query"):
+            st.session_state.user_input = selected_query
+        
+        # System Information
+        st.subheader("ℹ️ System Info")
+        st.info("""
+        **Features:**
+        - Intelligent semantic search
+        - MCP server integration
+        - Real-time license information
+        - Cost estimation
+        - Timeline analysis
         """)
+        
+        # Clear History
+        if st.button("🗑️ Clear History"):
+            st.session_state.chat_history = []
+            st.success("History cleared!")
 
-# Source Attribution Info
-with st.expander("📍 Response Sources"):
-    st.markdown("""
-    **How Response Sources Work:**
+
+def display_chat_interface():
+    """Display the main chat interface."""
+    st.header("💬 Chat Interface")
     
-    The app automatically detects your location and uses appropriate sources:
+    # Initialize chat interface if not exists
+    if st.session_state.chat_interface is None:
+        try:
+            st.session_state.chat_interface = BusinessLicenseChat()
+            st.success("✅ Chat interface initialized")
+        except Exception as e:
+            st.error(f"❌ Error initializing chat interface: {e}")
+            return
     
-    **📍 Location Detection:**
-    - Mentions of states (Delaware, Texas, California, etc.)
-    - State abbreviations (DE, TX, CA, etc.)
-    - City names with state context
+    # Chat input
+    user_input = st.text_input(
+        "Ask about business licenses:",
+        key="user_input",
+        placeholder="e.g., I want to open an ice cream franchise in FL for Rita's"
+    )
     
-    **🤖 AI Sources:**
-    - **Gemini**: Google's AI for cloud deployment
-    - **Ollama**: Local AI for privacy-focused users
-    - **Fallback**: Rule-based guidance when AI unavailable
+    # Process button
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        process_button = st.button("🚀 Process Query", type="primary")
     
-    **🏛️ State-Specific Sources:**
-    - **Delaware**: Official Delaware Business First Steps + RAG
-    - **Other States**: General guidance + state-specific links
-    - **General**: SBA and local authority resources
+    with col2:
+        if st.button("🧪 Test Analysis"):
+            if user_input:
+                test_analysis(user_input)
     
-    **📊 Data Quality:**
-    - AI responses are marked with source attribution
-    - Delaware queries get official government data
-    - All responses include relevant state/local links
-    """)
+    # Process the query
+    if process_button and user_input:
+        process_query(user_input)
 
-# Gemini API Key configuration
-with st.expander("🔑 Gemini API Key Setup"):
-    st.markdown("""
-    **To use Gemini AI:**
-    1. Get a free API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-    2. Set it as an environment variable: `export GEMINI_API_KEY=your_key_here`
-    3. Or enter it below (for testing only)
-    """)
+
+def test_analysis(query: str):
+    """Test the intelligent semantic search analysis."""
+    st.subheader("🔍 Intelligent Analysis Test")
     
-    # Option to enter API key manually (for testing)
-    manual_key = st.text_input("Gemini API Key (optional, for testing)", type="password")
-    if manual_key:
-        # Validate API key before setting
-        if validate_api_key(manual_key):
-            os.environ['GEMINI_API_KEY'] = manual_key
-            st.success("✅ API key set for this session")
-        else:
-            st.error("❌ Invalid API key format. Please check your key.")
+    try:
+        # Run analysis
+        with st.spinner("Analyzing query..."):
+            analysis = asyncio.run(intelligent_semantic_search.analyze_business_query(query))
+        
+        # Display results
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Business Type", analysis.get('business_type', 'Unknown'))
+            st.metric("Detected Licenses", len(analysis.get('detected_licenses', [])))
+            st.metric("Timeline", analysis.get('timeline', 'Unknown'))
+        
+        with col2:
+            costs = analysis.get('estimated_costs', {})
+            st.metric("Total Cost", costs.get('total_initial', 'Unknown'))
+            st.metric("Application Fee", costs.get('application_fee', 'Unknown'))
+            st.metric("License Fee", costs.get('license_fee', 'Unknown'))
+        
+        # Detailed information
+        with st.expander("📋 Detailed Analysis"):
+            st.json(analysis)
+            
+    except Exception as e:
+        st.error(f"❌ Analysis error: {e}")
 
-# Check AI availability
-gemini_available = os.getenv('GEMINI_API_KEY') is not None and validate_api_key(os.getenv('GEMINI_API_KEY', ''))
-st.sidebar.markdown("### 🤖 AI Status")
-if gemini_available:
-    st.sidebar.success("✅ Gemini AI Available")
-else:
-    st.sidebar.warning("⚠️ Gemini API key not set")
 
-if DELAWARE_RAG_AVAILABLE:
-    st.sidebar.success("✅ Delaware RAG Available")
-else:
-    st.sidebar.warning("⚠️ Delaware RAG not available")
-
-# Location detection info
-st.sidebar.markdown("### 📍 Location Detection")
-st.sidebar.info("""
-The app automatically detects your location from your query and provides appropriate state/local resources.
-
-**Examples:**
-- "bakery in Delaware" → DE resources
-- "consulting in Texas" → TX resources  
-- "restaurant in CA" → CA resources
-""")
-
-user_input = st.text_area(
-    "Business Description", 
-    placeholder="e.g., I run a home bakery in Delaware",
-    height=100
-)
-
-if st.button("🚀 Find My License Path", type="primary"):
-    if user_input.strip():
-        # Sanitize user input
-        sanitized_input = sanitize_input(user_input)
-        if not sanitized_input:
-            st.error("❌ Input contains invalid characters or is too long.")
-        else:
-            with st.spinner("🤖 Consulting AI agent..."):
-                try:
-                    response = run_agent(sanitized_input)
-                    
-                    # Check what type of response we got
-                    if response.startswith("ERROR:"):
-                        st.warning("⚠️ AI not available - using general guidance")
-                        st.info("💡 Set up Gemini API key or Ollama for AI-powered guidance")
-                        st.markdown("### 📋 General License Guidance:")
+def process_query(query: str):
+    """Process a user query and display the response."""
+    st.subheader("🤖 AI Response")
+    
+    try:
+        # Process query
+        with st.spinner("Processing query..."):
+            response = asyncio.run(st.session_state.chat_interface.process_query(query))
+        
+        # Add to history
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        st.session_state.chat_history.append({
+            "timestamp": timestamp,
+            "query": query,
+            "response": response
+        })
+        
+        # Display response
+        st.markdown("### Response:")
+        st.markdown(response)
+        
+        # Show response analysis
+        with st.expander("📊 Response Analysis"):
+            analysis = {
+                "Contains License Info": "license" in response.lower(),
+                "Contains Source Info": "source" in response.lower() or "http" in response.lower(),
+                "Contains Cost Info": "cost" in response.lower() or "$" in response,
+                "Contains Next Steps": "next" in response.lower() or "step" in response.lower(),
+                "Response Length": len(response),
+                "Word Count": len(response.split())
+            }
+            
+            for key, value in analysis.items():
+                if isinstance(value, bool):
+                    if value:
+                        st.success(f"✅ {key}")
                     else:
-                        st.success("✅ AI-powered guidance ready!")
-                        st.markdown("### 🤖 AI License Guidance:")
+                        st.warning(f"⚠️ {key}")
+                else:
+                    st.info(f"📊 {key}: {value}")
                     
-                    st.write(response)
-                    
-                except Exception as e:
-                    st.error(f"❌ Unexpected error: {str(e)}")
-                    st.info("💡 Check your API key or try the fallback mode")
-    else:
-        st.warning("Please enter a business description")
+    except Exception as e:
+        st.error(f"❌ Processing error: {e}")
 
-st.markdown("---")
-st.markdown("""
-### ℹ️ How to use:
-1. Describe your business type and location
-2. Click "Find My License Path"
-3. Get personalized guidance on licenses and permits
-4. Review the source attribution for transparency
 
-### 🔧 Setup Options:
+def display_chat_history():
+    """Display the chat history."""
+    if st.session_state.chat_history:
+        st.subheader("📜 Chat History")
+        
+        for i, entry in enumerate(reversed(st.session_state.chat_history)):
+            with st.expander(f"💬 {entry['timestamp']} - {entry['query'][:50]}..."):
+                st.markdown(f"**Query:** {entry['query']}")
+                st.markdown(f"**Response:** {entry['response']}")
 
-**Option 1: Gemini AI (Cloud-friendly)**
-```bash
-# Get API key from https://makersuite.google.com/app/apikey
-export GEMINI_API_KEY=your_key_here
-streamlit run streamlit_app.py
-```
 
-**Option 2: Local Ollama**
-```bash
-# Install Ollama
-brew install ollama  # macOS
-# OR
-curl -fsSL https://ollama.ai/install.sh | sh  # Linux
+def display_system_status():
+    """Display system status and configuration."""
+    st.subheader("🔧 System Status")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("Chat History", len(st.session_state.chat_history))
+        
+        # Check API key status
+        import os
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if gemini_api_key:
+            st.success("✅ GEMINI_API_KEY Available")
+        else:
+            st.warning("⚠️ GEMINI_API_KEY Missing")
+    
+    with col2:
+        # Test MCP availability
+        try:
+            from mcp_use import MCPAgent, MCPClient
+            st.success("✅ MCP Components Available")
+        except ImportError:
+            st.info("ℹ️ MCP Components Not Installed")
+            st.info("Install with: pip install mcp-use")
+    
+    with col3:
+        # Test intelligent semantic search
+        try:
+            from src.core.intelligent_semantic_search import intelligent_semantic_search
+            st.success("✅ Intelligent Semantic Search Available")
+        except Exception as e:
+            st.error(f"❌ Intelligent Semantic Search Error: {str(e)[:50]}...")
+    
+    # Additional status information
+    with st.expander("📊 Detailed System Info"):
+        st.info("""
+        **System Components:**
+        - ✅ Streamlit Web Interface
+        - ✅ Intelligent Semantic Search
+        - ✅ Business License Analysis
+        - ✅ Cost Estimation
+        - ✅ Timeline Analysis
+        - ⚠️ MCP Integration (Optional)
+        - ⚠️ Real-time Data Fetching (Optional)
+        
+        **Features Working:**
+        - Query processing and analysis
+        - Business type detection
+        - License requirement identification
+        - Cost and timeline estimation
+        - Source information display
+        """)
 
-# Pull the model
-ollama pull llama3.1:8b
 
-# Start the server
-ollama serve
+def main():
+    """Main Streamlit application."""
+    # Load environment variables at startup
+    import os
+    from dotenv import load_dotenv
+    
+    # Load .env file
+    load_dotenv()
+    
+    # Set up the page
+    setup_page()
+    init_session_state()
+    
+    # Create sidebar
+    create_sidebar()
+    
+    # Main content area
+    tab1, tab2, tab3 = st.tabs(["💬 Chat", "📜 History", "🔧 Status"])
+    
+    with tab1:
+        display_chat_interface()
+    
+    with tab2:
+        display_chat_history()
+    
+    with tab3:
+        display_system_status()
+    
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style='text-align: center; color: #666;'>
+        <p>🚀 Business License Navigator - AI-Powered License Guidance System</p>
+        <p>Built with Streamlit, MCP, and Intelligent Semantic Search</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Run this app locally
-streamlit run streamlit_app.py
-```
 
-**Option 3: Delaware RAG Integration**
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup Qdrant vector database
-python setup_qdrant.py
-
-# Test Delaware RAG tools
-python tests/test_delaware_rag.py
-
-# Run the app
-streamlit run streamlit_app.py
-```
-
-### 📞 Need Help?
-- Contact your local Small Business Administration (SBA)
-- Check with your city/county clerk's office
-- Consult with a business attorney
-- Verify requirements with your state's business licensing office
-""") 
+if __name__ == "__main__":
+    main() 
